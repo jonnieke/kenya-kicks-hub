@@ -61,7 +61,20 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				football: {
+					green: 'hsl(var(--football-green))',
+					gold: 'hsl(var(--football-gold))'
+				},
+				match: {
+					live: 'hsl(var(--match-live))',
+					upcoming: 'hsl(var(--match-upcoming))',
+					finished: 'hsl(var(--match-finished))'
 				}
+			},
+			backgroundImage: {
+				'gradient-primary': 'var(--gradient-primary)',
+				'gradient-card': 'var(--gradient-card)'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
