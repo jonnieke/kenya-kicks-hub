@@ -14,7 +14,178 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      matches: {
+        Row: {
+          api_match_id: string | null
+          away_team: string
+          created_at: string
+          home_team: string
+          id: string
+          league: string
+          match_date: string
+          status: string | null
+          updated_at: string
+          venue: string | null
+        }
+        Insert: {
+          api_match_id?: string | null
+          away_team: string
+          created_at?: string
+          home_team: string
+          id?: string
+          league: string
+          match_date: string
+          status?: string | null
+          updated_at?: string
+          venue?: string | null
+        }
+        Update: {
+          api_match_id?: string | null
+          away_team?: string
+          created_at?: string
+          home_team?: string
+          id?: string
+          league?: string
+          match_date?: string
+          status?: string | null
+          updated_at?: string
+          venue?: string | null
+        }
+        Relationships: []
+      }
+      prediction_accuracy: {
+        Row: {
+          actual_score: string | null
+          confidence_score: number | null
+          created_at: string
+          id: string
+          match_date: string
+          prediction_id: string
+          was_correct: boolean | null
+        }
+        Insert: {
+          actual_score?: string | null
+          confidence_score?: number | null
+          created_at?: string
+          id?: string
+          match_date: string
+          prediction_id: string
+          was_correct?: boolean | null
+        }
+        Update: {
+          actual_score?: string | null
+          confidence_score?: number | null
+          created_at?: string
+          id?: string
+          match_date?: string
+          prediction_id?: string
+          was_correct?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prediction_accuracy_prediction_id_fkey"
+            columns: ["prediction_id"]
+            isOneToOne: false
+            referencedRelation: "predictions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      predictions: {
+        Row: {
+          ai_model_used: string | null
+          away_win_odds: number | null
+          confidence_score: number
+          created_at: string
+          draw_odds: number | null
+          home_win_odds: number | null
+          id: string
+          match_id: string
+          predicted_score: string
+          reasoning: string | null
+          updated_at: string
+        }
+        Insert: {
+          ai_model_used?: string | null
+          away_win_odds?: number | null
+          confidence_score: number
+          created_at?: string
+          draw_odds?: number | null
+          home_win_odds?: number | null
+          id?: string
+          match_id: string
+          predicted_score: string
+          reasoning?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ai_model_used?: string | null
+          away_win_odds?: number | null
+          confidence_score?: number
+          created_at?: string
+          draw_odds?: number | null
+          home_win_odds?: number | null
+          id?: string
+          match_id?: string
+          predicted_score?: string
+          reasoning?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "predictions_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_stats: {
+        Row: {
+          created_at: string
+          draws: number | null
+          goals_against: number | null
+          goals_for: number | null
+          id: string
+          last_updated: string
+          league: string
+          losses: number | null
+          matches_played: number | null
+          recent_form: string | null
+          team_name: string
+          wins: number | null
+        }
+        Insert: {
+          created_at?: string
+          draws?: number | null
+          goals_against?: number | null
+          goals_for?: number | null
+          id?: string
+          last_updated?: string
+          league: string
+          losses?: number | null
+          matches_played?: number | null
+          recent_form?: string | null
+          team_name: string
+          wins?: number | null
+        }
+        Update: {
+          created_at?: string
+          draws?: number | null
+          goals_against?: number | null
+          goals_for?: number | null
+          id?: string
+          last_updated?: string
+          league?: string
+          losses?: number | null
+          matches_played?: number | null
+          recent_form?: string | null
+          team_name?: string
+          wins?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
