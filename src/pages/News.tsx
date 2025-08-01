@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Newspaper, Clock, Eye } from "lucide-react"
+import { NewsScraper } from "@/components/NewsScraper"
 
 const newsArticles = [
   {
@@ -49,7 +50,11 @@ const News = () => {
           </div>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <NewsScraper />
+
+        <div>
+          <h2 className="text-2xl font-bold text-foreground mb-4">Local Football News</h2>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {newsArticles.map((article) => (
             <Card key={article.id} className="bg-gradient-card border-border hover:border-primary/50 transition-all duration-300 hover:scale-105 cursor-pointer">
               <div className="aspect-video bg-muted rounded-t-lg flex items-center justify-center">
@@ -79,6 +84,7 @@ const News = () => {
               </CardContent>
             </Card>
           ))}
+          </div>
         </div>
       </div>
     </div>
