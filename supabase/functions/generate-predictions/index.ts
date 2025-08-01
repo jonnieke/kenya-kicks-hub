@@ -18,10 +18,10 @@ serve(async (req) => {
   }
 
   try {
-    const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
+    const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
     const footballApiKey = Deno.env.get('FOOTBALL_API_KEY');
     
-    if (!openaiApiKey || !footballApiKey) {
+    if (!geminiApiKey || !footballApiKey) {
       return new Response(JSON.stringify({ 
         error: 'Missing required API keys' 
       }), {
@@ -63,19 +63,21 @@ Based on team form, head-to-head records, and current standings, provide:
 Respond in JSON format: {"prediction": "2-1", "confidence": 75, "reasoning": "Home team advantage..."}`;
 
       try {
-        const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        const aiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${geminiApiKey}`, {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${openaiApiKey}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: 'gpt-4o-mini',
-            messages: [
-              { role: 'system', content: 'You are an expert football analyst providing match predictions.' },
-              { role: 'user', content: prompt }
-            ],
-            temperature: 0.7,
+            contents: [{
+              parts: [{
+                text: `You are an expert football analyst. ${prompt}`
+              }]
+            }],
+            generationConfig: {
+              temperature: 0.7,
+              maxOutputTokens: 1000,
+            }
           }),
         });
 
@@ -83,7 +85,8 @@ Respond in JSON format: {"prediction": "2-1", "confidence": 75, "reasoning": "Ho
         let aiPrediction;
         
         try {
-          aiPrediction = JSON.parse(aiData.choices[0].message.content);
+          const responseText = aiData.candidates[0].content.parts[0].text;
+          aiPrediction = JSON.parse(responseText);
         } catch {
           // Fallback if AI doesn't return valid JSON
           aiPrediction = {
