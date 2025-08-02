@@ -1,56 +1,85 @@
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Clock, Calendar } from "lucide-react"
+import { Clock, Calendar, RefreshCw } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { useEffect, useState } from "react"
+import { supabase } from "@/integrations/supabase/client"
+import { toast } from "sonner"
 
-const liveMatches = [
-  {
-    id: 1,
-    homeTeam: "Arsenal",
-    awayTeam: "Chelsea",
-    homeScore: 2,
-    awayScore: 1,
-    status: "LIVE",
-    minute: "78'",
-    league: "Premier League"
-  },
-  {
-    id: 2,
-    homeTeam: "Manchester City",
-    awayTeam: "Liverpool",
-    homeScore: 1,
-    awayScore: 3,
-    status: "FT",
-    minute: "90'",
-    league: "Premier League"
-  },
-  {
-    id: 3,
-    homeTeam: "Real Madrid",
-    awayTeam: "Barcelona",
-    homeScore: 0,
-    awayScore: 0,
-    status: "UPCOMING",
-    minute: "20:00",
-    league: "La Liga"
-  }
-]
+interface Match {
+  id: number
+  homeTeam: string
+  awayTeam: string
+  homeScore: number
+  awayScore: number
+  status: string
+  minute: string
+  league: string
+}
 
 const LiveScores = () => {
+  const [matches, setMatches] = useState<Match[]>([])
+  const [loading, setLoading] = useState(true)
+
+  const fetchLiveScores = async () => {
+    try {
+      setLoading(true)
+      const { data, error } = await supabase.functions.invoke('get-live-scores')
+      
+      if (error) {
+        throw error
+      }
+
+      setMatches(data.matches || [])
+      toast.success(`Updated ${data.matches?.length || 0} live matches`)
+    } catch (error) {
+      console.error('Error fetching live scores:', error)
+      toast.error('Failed to fetch live scores')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchLiveScores()
+  }, [])
+
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-6xl mx-auto space-y-6">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
-            <Clock className="w-6 h-6 text-background" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
+              <Clock className="w-6 h-6 text-background" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">Live Scores</h1>
+              <p className="text-muted-foreground">Real-time football match updates</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Live Scores</h1>
-            <p className="text-muted-foreground">Real-time football match updates</p>
-          </div>
+          <Button 
+            onClick={fetchLiveScores} 
+            disabled={loading}
+            variant="outline"
+            size="sm"
+          >
+            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
         </div>
 
-        <div className="grid gap-4">
-          {liveMatches.map((match) => (
+        {loading && matches.length === 0 ? (
+          <div className="text-center py-8">
+            <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4 text-muted-foreground" />
+            <p className="text-muted-foreground">Loading live scores...</p>
+          </div>
+        ) : matches.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-muted-foreground">No live matches available</p>
+          </div>
+        ) : (
+          <div className="grid gap-4">
+            {matches.map((match) => (
             <Card key={match.id} className="bg-gradient-card border-border hover:border-primary/50 transition-colors">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
@@ -94,8 +123,9 @@ const LiveScores = () => {
                 </div>
               </CardContent>
             </Card>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
