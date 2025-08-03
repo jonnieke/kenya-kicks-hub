@@ -1,45 +1,48 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Trophy, Activity, Newspaper, TrendingUp, Users, Clock, Calendar } from "lucide-react"
-import { Link } from "react-router-dom"
-import heroImage from "@/assets/hero-footballer-scoring.jpg"
-
-const featuredMatches = [
-  {
-    homeTeam: "Arsenal",
-    awayTeam: "Chelsea",
-    time: "15:30",
-    status: "LIVE",
-    league: "Premier League"
-  },
-  {
-    homeTeam: "Gor Mahia",
-    awayTeam: "AFC Leopards",
-    time: "16:00",
-    status: "UPCOMING",
-    league: "FKF Premier League"
-  }
-]
-
-const quickStats = [
-  { label: "Matches Today", value: "12", icon: Activity },
-  { label: "Live Now", value: "3", icon: Clock },
-  { label: "Active Users", value: "2.4k", icon: Users },
-  { label: "Predictions Made", value: "156", icon: TrendingUp }
-]
-
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Trophy, Activity, Newspaper, TrendingUp, Users, Clock, Calendar } from "lucide-react";
+import { Link } from "react-router-dom";
+import heroImage from "@/assets/hero-footballer-scoring.jpg";
+const featuredMatches = [{
+  homeTeam: "Arsenal",
+  awayTeam: "Chelsea",
+  time: "15:30",
+  status: "LIVE",
+  league: "Premier League"
+}, {
+  homeTeam: "Gor Mahia",
+  awayTeam: "AFC Leopards",
+  time: "16:00",
+  status: "UPCOMING",
+  league: "FKF Premier League"
+}];
+const quickStats = [{
+  label: "Matches Today",
+  value: "12",
+  icon: Activity
+}, {
+  label: "Live Now",
+  value: "3",
+  icon: Clock
+}, {
+  label: "Active Users",
+  value: "2.4k",
+  icon: Users
+}, {
+  label: "Predictions Made",
+  value: "156",
+  icon: TrendingUp
+}];
 const Index = () => {
-  return (
-    <div className="min-h-screen bg-background p-6">
+  return <div className="min-h-screen bg-background p-6">
       <div className="max-w-6xl mx-auto space-y-8">
         {/* Hero Section */}
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary/20 via-background to-primary/10 p-8 md:p-16">
           <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-background/60 to-transparent z-10" />
-          <div 
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-40"
-            style={{ backgroundImage: `url(${heroImage})` }}
-          />
+          <div className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-40" style={{
+          backgroundImage: `url(${heroImage})`
+        }} />
           
           <div className="relative z-20 grid md:grid-cols-2 gap-8 items-center max-w-6xl mx-auto">
             <div className="text-left space-y-6">
@@ -53,8 +56,8 @@ const Index = () => {
               </div>
               
               <h1 className="text-6xl md:text-7xl font-bold leading-tight">
-                <span className="text-foreground">Football</span>
-                <span className="bg-gradient-primary bg-clip-text text-transparent">KE</span>
+                <span className="text-foreground">Ball</span>
+                <span className="bg-gradient-primary bg-clip-text text-transparent">Mtaani</span>
               </h1>
               
               <p className="text-xl text-muted-foreground leading-relaxed">
@@ -84,26 +87,20 @@ const Index = () => {
             
             <div className="hidden md:block relative">
               <div className="absolute inset-0 bg-gradient-primary opacity-20 rounded-2xl blur-3xl transform rotate-6"></div>
-              <img 
-                src={heroImage} 
-                alt="Footballer scoring a goal" 
-                className="relative z-10 w-full h-[500px] object-cover rounded-2xl shadow-2xl transform hover:scale-105 transition-transform duration-500"
-              />
+              <img src={heroImage} alt="Footballer scoring a goal" className="relative z-10 w-full h-[500px] object-cover rounded-2xl shadow-2xl transform hover:scale-105 transition-transform duration-500" />
             </div>
           </div>
         </div>
 
         {/* Quick Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {quickStats.map((stat, index) => (
-            <Card key={index} className="bg-gradient-card border-border text-center">
+          {quickStats.map((stat, index) => <Card key={index} className="bg-gradient-card border-border text-center">
               <CardContent className="p-6">
                 <stat.icon className="w-8 h-8 text-primary mx-auto mb-2" />
                 <div className="text-2xl font-bold text-foreground">{stat.value}</div>
                 <div className="text-sm text-muted-foreground">{stat.label}</div>
               </CardContent>
-            </Card>
-          ))}
+            </Card>)}
         </div>
 
         {/* Featured Matches */}
@@ -115,13 +112,9 @@ const Index = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {featuredMatches.map((match, index) => (
-              <div key={index} className="flex items-center justify-between p-4 bg-background/50 rounded-lg">
+            {featuredMatches.map((match, index) => <div key={index} className="flex items-center justify-between p-4 bg-background/50 rounded-lg">
                 <div className="flex items-center gap-4">
-                  <Badge 
-                    variant={match.status === "LIVE" ? "destructive" : "secondary"}
-                    className={match.status === "LIVE" ? "bg-match-live text-white animate-pulse" : "bg-match-upcoming text-background"}
-                  >
+                  <Badge variant={match.status === "LIVE" ? "destructive" : "secondary"} className={match.status === "LIVE" ? "bg-match-live text-white animate-pulse" : "bg-match-upcoming text-background"}>
                     {match.status}
                   </Badge>
                   <div>
@@ -133,8 +126,7 @@ const Index = () => {
                   <Calendar className="w-4 h-4" />
                   <span>{match.time}</span>
                 </div>
-              </div>
-            ))}
+              </div>)}
             <Button asChild variant="outline" className="w-full">
               <Link to="/live-scores">View All Matches</Link>
             </Button>
@@ -195,8 +187,6 @@ const Index = () => {
           </Card>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
