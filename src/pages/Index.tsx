@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Trophy, Activity, Newspaper, TrendingUp, Users, Clock, Calendar } from "lucide-react"
 import { Link } from "react-router-dom"
+import heroImage from "@/assets/hero-footballer-scoring.jpg"
 
 const featuredMatches = [
   {
@@ -33,25 +34,62 @@ const Index = () => {
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-6xl mx-auto space-y-8">
         {/* Hero Section */}
-        <div className="text-center space-y-4 py-12">
-          <div className="flex items-center justify-center gap-3 mb-6">
-            <div className="w-16 h-16 bg-gradient-primary rounded-2xl flex items-center justify-center">
-              <Trophy className="w-10 h-10 text-background" />
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary/20 via-background to-primary/10 p-8 md:p-16">
+          <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-background/60 to-transparent z-10" />
+          <div 
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-40"
+            style={{ backgroundImage: `url(${heroImage})` }}
+          />
+          
+          <div className="relative z-20 grid md:grid-cols-2 gap-8 items-center max-w-6xl mx-auto">
+            <div className="text-left space-y-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-16 h-16 bg-gradient-primary rounded-2xl flex items-center justify-center shadow-lg">
+                  <Trophy className="w-10 h-10 text-background" />
+                </div>
+                <div className="text-sm font-medium text-primary uppercase tracking-wider">
+                  🔥 Kenya's #1 Football Hub
+                </div>
+              </div>
+              
+              <h1 className="text-6xl md:text-7xl font-bold leading-tight">
+                <span className="text-foreground">Football</span>
+                <span className="bg-gradient-primary bg-clip-text text-transparent">KE</span>
+              </h1>
+              
+              <p className="text-xl text-muted-foreground leading-relaxed">
+                Experience the passion of Kenyan football like never before. Get live scores, breaking news, match predictions, and connect with thousands of fans in real-time.
+              </p>
+              
+              <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                <Button asChild size="lg" className="bg-gradient-primary text-lg px-8 py-4 shadow-lg hover:shadow-xl transition-all">
+                  <Link to="/live-scores">🏟️ Live Matches</Link>
+                </Button>
+                <Button variant="outline" asChild size="lg" className="text-lg px-8 py-4 border-2">
+                  <Link to="/chat">💬 Join 2.4k Fans</Link>
+                </Button>
+              </div>
+              
+              <div className="flex items-center gap-6 pt-4 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-match-live rounded-full animate-pulse"></div>
+                  <span>3 Live matches</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-primary rounded-full"></div>
+                  <span>156 Predictions today</span>
+                </div>
+              </div>
             </div>
-          </div>
-          <h1 className="text-5xl font-bold text-foreground bg-gradient-primary bg-clip-text text-transparent">
-            FootballKE
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Your ultimate destination for Kenyan football. Live scores, news, predictions, and community chat all in one place.
-          </p>
-          <div className="flex gap-4 justify-center mt-8">
-            <Button asChild className="bg-gradient-primary">
-              <Link to="/live-scores">View Live Scores</Link>
-            </Button>
-            <Button variant="outline" asChild>
-              <Link to="/chat">Join Community</Link>
-            </Button>
+            
+            <div className="hidden md:block relative">
+              <div className="absolute inset-0 bg-gradient-primary opacity-20 rounded-2xl blur-3xl transform rotate-6"></div>
+              <img 
+                src={heroImage} 
+                alt="Footballer scoring a goal" 
+                className="relative z-10 w-full h-[500px] object-cover rounded-2xl shadow-2xl transform hover:scale-105 transition-transform duration-500"
+              />
+            </div>
           </div>
         </div>
 
