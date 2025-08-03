@@ -1,54 +1,66 @@
+import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Brain, Trophy, Clock, Users, Star } from "lucide-react"
+import { QuizTaker } from "@/components/QuizTaker"
+import { QuizResults } from "@/components/QuizResults"
 
 const quizzes = [
   {
-    id: 1,
+    id: "premier-league-legends",
     title: "Premier League Legends",
     description: "Test your knowledge about Premier League history and legendary players",
     difficulty: "Medium",
-    questions: 20,
+    questions: 3,
     timeLimit: "15 min",
     participants: 1247,
     reward: "500 points",
     category: "History"
   },
   {
-    id: 2,
+    id: "kenyan-football-heroes",
     title: "Kenyan Football Heroes",
     description: "How well do you know Harambee Stars and local football legends?",
     difficulty: "Easy",
-    questions: 15,
+    questions: 3,
     timeLimit: "10 min",
     participants: 892,
     reward: "300 points",
     category: "Local"
   },
   {
-    id: 3,
+    id: "world-cup-trivia",
     title: "World Cup Trivia",
     description: "From 1930 to 2022 - the ultimate World Cup knowledge test",
     difficulty: "Hard",
-    questions: 25,
+    questions: 3,
     timeLimit: "20 min",
     participants: 2156,
     reward: "1000 points",
     category: "International"
   },
   {
-    id: 4,
+    id: "transfer-market-madness",
     title: "Transfer Market Madness",
     description: "Can you guess the transfer fees and destination clubs?",
     difficulty: "Medium",
-    questions: 18,
+    questions: 3,
     timeLimit: "12 min",
     participants: 756,
     reward: "600 points",
     category: "Transfers"
   }
 ]
+
+type ViewState = 'list' | 'taking' | 'results';
+
+interface QuizState {
+  view: ViewState;
+  selectedQuiz?: typeof quizzes[0];
+  score?: number;
+  totalQuestions?: number;
+}
 
 const getDifficultyColor = (difficulty: string) => {
   switch (difficulty) {
@@ -60,6 +72,63 @@ const getDifficultyColor = (difficulty: string) => {
 }
 
 const Quizzes = () => {
+  const [quizState, setQuizState] = useState<QuizState>({ view: 'list' });
+
+  const handleStartQuiz = (quiz: typeof quizzes[0]) => {
+    setQuizState({
+      view: 'taking',
+      selectedQuiz: quiz
+    });
+  };
+
+  const handleQuizComplete = (score: number, totalQuestions: number) => {
+    setQuizState(prev => ({
+      ...prev,
+      view: 'results',
+      score,
+      totalQuestions
+    }));
+  };
+
+  const handleRetakeQuiz = () => {
+    if (quizState.selectedQuiz) {
+      setQuizState({
+        view: 'taking',
+        selectedQuiz: quizState.selectedQuiz
+      });
+    }
+  };
+
+  const handleBackToQuizzes = () => {
+    setQuizState({ view: 'list' });
+  };
+
+  // Show quiz taking interface
+  if (quizState.view === 'taking' && quizState.selectedQuiz) {
+    return (
+      <QuizTaker
+        quizId={quizState.selectedQuiz.id}
+        quizTitle={quizState.selectedQuiz.title}
+        onComplete={handleQuizComplete}
+        onBack={handleBackToQuizzes}
+      />
+    );
+  }
+
+  // Show quiz results
+  if (quizState.view === 'results' && quizState.selectedQuiz && quizState.score !== undefined && quizState.totalQuestions !== undefined) {
+    return (
+      <QuizResults
+        score={quizState.score}
+        totalQuestions={quizState.totalQuestions}
+        quizTitle={quizState.selectedQuiz.title}
+        onRetakeQuiz={handleRetakeQuiz}
+        onBackToQuizzes={handleBackToQuizzes}
+      />
+    );
+  }
+
+  // Show quiz list (default view)
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-6xl mx-auto space-y-6">
@@ -111,7 +180,10 @@ const Quizzes = () => {
                   <Badge variant="outline" className="text-xs">
                     {quiz.category}
                   </Badge>
-                  <Button className="bg-gradient-primary">
+                  <Button 
+                    className="bg-gradient-primary"
+                    onClick={() => handleStartQuiz(quiz)}
+                  >
                     Start Quiz
                   </Button>
                 </div>
