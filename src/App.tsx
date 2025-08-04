@@ -11,6 +11,7 @@ import News from "./pages/News";
 import Predictions from "./pages/Predictions";
 import Quizzes from "./pages/Quizzes";
 import Chat from "./pages/Chat";
+import Leagues from "./pages/Leagues";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -35,6 +36,7 @@ const App = () => (
                 <Route path="/predictions" element={<Predictions />} />
                 <Route path="/quizzes" element={<Quizzes />} />
                 <Route path="/chat" element={<Chat />} />
+                <Route path="/leagues" element={<Leagues />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
