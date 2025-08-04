@@ -1,144 +1,134 @@
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Clock, Calendar, RefreshCw, Trophy, Target, Timer, Play, Users } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { useEffect, useState, useCallback } from "react"
-import { supabase } from "@/integrations/supabase/client"
-import { toast } from "sonner"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { useQuery } from "@tanstack/react-query"
-
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Clock, Calendar, RefreshCw, Trophy, Target, Timer, Play, Users } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useEffect, useState, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useQuery } from "@tanstack/react-query";
 interface Match {
-  id: string
-  home_team: string
-  away_team: string
-  home_score: number | null
-  away_score: number | null
-  status: string
-  minute: string | null
-  league: string
-  start_time: string
-  venue?: string
+  id: string;
+  home_team: string;
+  away_team: string;
+  home_score: number | null;
+  away_score: number | null;
+  status: string;
+  minute: string | null;
+  league: string;
+  start_time: string;
+  venue?: string;
 }
-
 interface LeagueTable {
-  id: string
-  league: string
-  team_name: string
-  position: number
-  matches_played: number
-  wins: number
-  draws: number
-  losses: number
-  goals_for: number
-  goals_against: number
-  goal_difference: number
-  points: number
+  id: string;
+  league: string;
+  team_name: string;
+  position: number;
+  matches_played: number;
+  wins: number;
+  draws: number;
+  losses: number;
+  goals_for: number;
+  goals_against: number;
+  goal_difference: number;
+  points: number;
 }
-
 interface MatchDetails extends Match {
-  goal_scorers?: string[]
-  yellow_cards?: string[]
-  red_cards?: string[]
-  possession?: { home: number; away: number }
+  goal_scorers?: string[];
+  yellow_cards?: string[];
+  red_cards?: string[];
+  possession?: {
+    home: number;
+    away: number;
+  };
 }
-
 const LiveScores = () => {
-  const [selectedMatch, setSelectedMatch] = useState<MatchDetails | null>(null)
-  const [activeTab, setActiveTab] = useState("live")
+  const [selectedMatch, setSelectedMatch] = useState<MatchDetails | null>(null);
+  const [activeTab, setActiveTab] = useState("live");
 
   // Fetch matches with real-time updates
-  const { data: matches = [], isLoading: matchesLoading, refetch: refetchMatches } = useQuery({
+  const {
+    data: matches = [],
+    isLoading: matchesLoading,
+    refetch: refetchMatches
+  } = useQuery({
     queryKey: ['matches'],
     queryFn: async () => {
-      const now = new Date()
-      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-      const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
-
-      const { data, error } = await supabase
-        .from('matches')
-        .select('*')
-        .gte('start_time', sevenDaysAgo.toISOString())
-        .lte('start_time', sevenDaysFromNow.toISOString())
-        .order('start_time', { ascending: true })
-
-      if (error) throw error
-      return data as Match[]
+      const now = new Date();
+      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+      const {
+        data,
+        error
+      } = await supabase.from('matches').select('*').gte('start_time', sevenDaysAgo.toISOString()).lte('start_time', sevenDaysFromNow.toISOString()).order('start_time', {
+        ascending: true
+      });
+      if (error) throw error;
+      return data as Match[];
     },
-    refetchInterval: 30000, // Refetch every 30 seconds
-  })
+    refetchInterval: 30000 // Refetch every 30 seconds
+  });
 
   // Fetch league tables
-  const { data: leagueTables = [], isLoading: tablesLoading, refetch: refetchTables } = useQuery({
+  const {
+    data: leagueTables = [],
+    isLoading: tablesLoading,
+    refetch: refetchTables
+  } = useQuery({
     queryKey: ['league_tables'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('league_tables')
-        .select('*')
-        .order('league', { ascending: true })
-        .order('position', { ascending: true })
-
-      if (error) throw error
-      return data as LeagueTable[]
-    },
-  })
+      const {
+        data,
+        error
+      } = await supabase.from('league_tables').select('*').order('league', {
+        ascending: true
+      }).order('position', {
+        ascending: true
+      });
+      if (error) throw error;
+      return data as LeagueTable[];
+    }
+  });
 
   // Set up real-time subscriptions
   useEffect(() => {
-    const matchesChannel = supabase
-      .channel('matches-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'matches'
-        },
-        (payload) => {
-          console.log('Match update:', payload)
-          refetchMatches()
-          if (payload.eventType === 'UPDATE' && payload.new) {
-            toast.success(`Match updated: ${payload.new.home_team} vs ${payload.new.away_team}`)
-          }
-        }
-      )
-      .subscribe()
-
-    const tablesChannel = supabase
-      .channel('tables-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'league_tables'
-        },
-        () => {
-          refetchTables()
-        }
-      )
-      .subscribe()
-
+    const matchesChannel = supabase.channel('matches-changes').on('postgres_changes', {
+      event: '*',
+      schema: 'public',
+      table: 'matches'
+    }, payload => {
+      console.log('Match update:', payload);
+      refetchMatches();
+      if (payload.eventType === 'UPDATE' && payload.new) {
+        toast.success(`Match updated: ${payload.new.home_team} vs ${payload.new.away_team}`);
+      }
+    }).subscribe();
+    const tablesChannel = supabase.channel('tables-changes').on('postgres_changes', {
+      event: '*',
+      schema: 'public',
+      table: 'league_tables'
+    }, () => {
+      refetchTables();
+    }).subscribe();
     return () => {
-      supabase.removeChannel(matchesChannel)
-      supabase.removeChannel(tablesChannel)
-    }
-  }, [refetchMatches, refetchTables])
+      supabase.removeChannel(matchesChannel);
+      supabase.removeChannel(tablesChannel);
+    };
+  }, [refetchMatches, refetchTables]);
 
   // Filter matches by status
-  const liveMatches = matches.filter(match => match.status === 'LIVE')
-  const upcomingMatches = matches.filter(match => match.status === 'UPCOMING' || match.status === 'TIMED')
-  const recentResults = matches.filter(match => match.status === 'FT' || match.status === 'FINISHED')
+  const liveMatches = matches.filter(match => match.status === 'LIVE');
+  const upcomingMatches = matches.filter(match => match.status === 'UPCOMING' || match.status === 'TIMED');
+  const recentResults = matches.filter(match => match.status === 'FT' || match.status === 'FINISHED');
 
   // Group league tables by league
   const groupedTables = leagueTables.reduce((acc, team) => {
-    if (!acc[team.league]) acc[team.league] = []
-    acc[team.league].push(team)
-    return acc
-  }, {} as Record<string, LeagueTable[]>)
-
+    if (!acc[team.league]) acc[team.league] = [];
+    acc[team.league].push(team);
+    return acc;
+  }, {} as Record<string, LeagueTable[]>);
   const handleMatchClick = (match: Match) => {
     // Simulate additional match details
     const matchDetails: MatchDetails = {
@@ -146,50 +136,41 @@ const LiveScores = () => {
       goal_scorers: match.home_score || match.away_score ? ['J. Smith 15\'', 'K. Johnson 67\''] : [],
       yellow_cards: ['M. Brown 23\'', 'L. Davis 78\''],
       red_cards: [],
-      possession: { home: 58, away: 42 }
-    }
-    setSelectedMatch(matchDetails)
-  }
-
+      possession: {
+        home: 58,
+        away: 42
+      }
+    };
+    setSelectedMatch(matchDetails);
+  };
   const scrapeCAFMatches = async () => {
     try {
-      toast.info('Scraping latest CAF matches...')
-      
-      const { data, error } = await supabase.functions.invoke('scrape-caf-matches')
-      
-      if (error) throw error
-
-      await refetchMatches()
-      toast.success(`Scraped ${data.matches?.length || 0} CAF matches`)
+      toast.info('Scraping latest CAF matches...');
+      const {
+        data,
+        error
+      } = await supabase.functions.invoke('scrape-caf-matches');
+      if (error) throw error;
+      await refetchMatches();
+      toast.success(`Scraped ${data.matches?.length || 0} CAF matches`);
     } catch (error) {
-      console.error('Error scraping CAF matches:', error)
-      toast.error('Failed to scrape CAF matches')
+      console.error('Error scraping CAF matches:', error);
+      toast.error('Failed to scrape CAF matches');
     }
-  }
-
-  const MatchCard = ({ match, showAnimation = false }: { match: Match; showAnimation?: boolean }) => (
-    <Card 
-      key={match.id} 
-      className={`bg-gradient-card border-border hover:border-primary/50 transition-all cursor-pointer ${showAnimation ? 'animate-pulse' : ''}`}
-      onClick={() => handleMatchClick(match)}
-    >
+  };
+  const MatchCard = ({
+    match,
+    showAnimation = false
+  }: {
+    match: Match;
+    showAnimation?: boolean;
+  }) => <Card key={match.id} className={`bg-gradient-card border-border hover:border-primary/50 transition-all cursor-pointer ${showAnimation ? 'animate-pulse' : ''}`} onClick={() => handleMatchClick(match)}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm text-muted-foreground">{match.league}</CardTitle>
           <div className="flex items-center gap-2">
-            {match.venue && (
-              <span className="text-xs text-muted-foreground">{match.venue}</span>
-            )}
-            <Badge 
-              variant={match.status === "LIVE" ? "destructive" : match.status === "FT" || match.status === "FINISHED" ? "secondary" : "default"}
-              className={
-                match.status === "LIVE" 
-                  ? "bg-match-live text-white animate-pulse" 
-                  : match.status === "FT" || match.status === "FINISHED"
-                  ? "bg-match-finished text-white" 
-                  : "bg-match-upcoming text-background"
-              }
-            >
+            {match.venue && <span className="text-xs text-muted-foreground">{match.venue}</span>}
+            <Badge variant={match.status === "LIVE" ? "destructive" : match.status === "FT" || match.status === "FINISHED" ? "secondary" : "default"} className={match.status === "LIVE" ? "bg-match-live text-white animate-pulse" : match.status === "FT" || match.status === "FINISHED" ? "bg-match-finished text-white" : "bg-match-upcoming text-background"}>
               {match.status === "LIVE" ? `LIVE ${match.minute || ''}` : match.status}
             </Badge>
           </div>
@@ -201,21 +182,17 @@ const LiveScores = () => {
             <h3 className="font-semibold text-lg text-foreground">{match.home_team}</h3>
           </div>
           <div className="flex items-center gap-4 px-8">
-            {match.status !== "UPCOMING" && match.status !== "TIMED" ? (
-              <>
+            {match.status !== "UPCOMING" && match.status !== "TIMED" ? <>
                 <span className="text-3xl font-bold text-foreground">{match.home_score ?? 0}</span>
                 <span className="text-2xl text-muted-foreground">-</span>
                 <span className="text-3xl font-bold text-foreground">{match.away_score ?? 0}</span>
-              </>
-            ) : (
-              <div className="flex items-center gap-2 text-muted-foreground">
+              </> : <div className="flex items-center gap-2 text-muted-foreground">
                 <Timer className="w-4 h-4" />
-                <span>{new Date(match.start_time).toLocaleTimeString('en-US', { 
-                  hour: '2-digit', 
-                  minute: '2-digit' 
-                })}</span>
-              </div>
-            )}
+                <span>{new Date(match.start_time).toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit'
+              })}</span>
+              </div>}
           </div>
           <div className="flex-1 text-center">
             <h3 className="font-semibold text-lg text-foreground">{match.away_team}</h3>
@@ -223,17 +200,14 @@ const LiveScores = () => {
         </div>
         <div className="mt-2 text-center text-xs text-muted-foreground">
           {new Date(match.start_time).toLocaleDateString('en-US', {
-            weekday: 'short',
-            month: 'short',
-            day: 'numeric'
-          })}
+          weekday: 'short',
+          month: 'short',
+          day: 'numeric'
+        })}
         </div>
       </CardContent>
-    </Card>
-  )
-
-  return (
-    <div className="min-h-screen bg-background p-6">
+    </Card>;
+  return <div className="min-h-screen bg-background p-6">
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -242,26 +216,16 @@ const LiveScores = () => {
               <Clock className="w-6 h-6 text-background" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-foreground">Live Scores</h1>
+              <h1 className="text-3xl font-bold text-foreground">Scores</h1>
               <p className="text-muted-foreground">Real-time football match updates</p>
             </div>
           </div>
           <div className="flex gap-2">
-            <Button 
-              onClick={scrapeCAFMatches} 
-              disabled={matchesLoading}
-              variant="default"
-              size="sm"
-            >
+            <Button onClick={scrapeCAFMatches} disabled={matchesLoading} variant="default" size="sm">
               <Calendar className={`w-4 h-4 mr-2 ${matchesLoading ? 'animate-spin' : ''}`} />
               Scrape CAF
             </Button>
-            <Button 
-              onClick={() => refetchMatches()} 
-              disabled={matchesLoading}
-              variant="outline"
-              size="sm"
-            >
+            <Button onClick={() => refetchMatches()} disabled={matchesLoading} variant="outline" size="sm">
               <RefreshCw className={`w-4 h-4 mr-2 ${matchesLoading ? 'animate-spin' : ''}`} />
               Refresh
             </Button>
@@ -291,72 +255,46 @@ const LiveScores = () => {
 
           {/* Live Matches */}
           <TabsContent value="live" className="space-y-4">
-            {matchesLoading ? (
-              <div className="text-center py-8">
+            {matchesLoading ? <div className="text-center py-8">
                 <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4 text-muted-foreground" />
                 <p className="text-muted-foreground">Loading live matches...</p>
-              </div>
-            ) : liveMatches.length === 0 ? (
-              <div className="text-center py-8">
+              </div> : liveMatches.length === 0 ? <div className="text-center py-8">
                 <Play className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                 <p className="text-muted-foreground">No live matches at the moment</p>
-              </div>
-            ) : (
-              <div className="grid gap-4">
-                {liveMatches.map((match) => (
-                  <MatchCard key={match.id} match={match} showAnimation />
-                ))}
-              </div>
-            )}
+              </div> : <div className="grid gap-4">
+                {liveMatches.map(match => <MatchCard key={match.id} match={match} showAnimation />)}
+              </div>}
           </TabsContent>
 
           {/* Upcoming Fixtures */}
           <TabsContent value="fixtures" className="space-y-4">
-            {upcomingMatches.length === 0 ? (
-              <div className="text-center py-8">
+            {upcomingMatches.length === 0 ? <div className="text-center py-8">
                 <Timer className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                 <p className="text-muted-foreground">No upcoming fixtures</p>
-              </div>
-            ) : (
-              <div className="grid gap-4">
-                {upcomingMatches.map((match) => (
-                  <MatchCard key={match.id} match={match} />
-                ))}
-              </div>
-            )}
+              </div> : <div className="grid gap-4">
+                {upcomingMatches.map(match => <MatchCard key={match.id} match={match} />)}
+              </div>}
           </TabsContent>
 
           {/* Recent Results */}
           <TabsContent value="results" className="space-y-4">
-            {recentResults.length === 0 ? (
-              <div className="text-center py-8">
+            {recentResults.length === 0 ? <div className="text-center py-8">
                 <Target className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                 <p className="text-muted-foreground">No recent results</p>
-              </div>
-            ) : (
-              <div className="grid gap-4">
-                {recentResults.map((match) => (
-                  <MatchCard key={match.id} match={match} />
-                ))}
-              </div>
-            )}
+              </div> : <div className="grid gap-4">
+                {recentResults.map(match => <MatchCard key={match.id} match={match} />)}
+              </div>}
           </TabsContent>
 
           {/* League Tables */}
           <TabsContent value="tables" className="space-y-6">
-            {tablesLoading ? (
-              <div className="text-center py-8">
+            {tablesLoading ? <div className="text-center py-8">
                 <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4 text-muted-foreground" />
                 <p className="text-muted-foreground">Loading league tables...</p>
-              </div>
-            ) : Object.keys(groupedTables).length === 0 ? (
-              <div className="text-center py-8">
+              </div> : Object.keys(groupedTables).length === 0 ? <div className="text-center py-8">
                 <Trophy className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                 <p className="text-muted-foreground">No league tables available</p>
-              </div>
-            ) : (
-              Object.entries(groupedTables).map(([league, teams]) => (
-                <Card key={league} className="bg-gradient-card">
+              </div> : Object.entries(groupedTables).map(([league, teams]) => <Card key={league} className="bg-gradient-card">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Trophy className="w-5 h-5" />
@@ -378,8 +316,7 @@ const LiveScores = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {teams.map((team) => (
-                          <TableRow key={team.id}>
+                        {teams.map(team => <TableRow key={team.id}>
                             <TableCell className="font-medium">{team.position}</TableCell>
                             <TableCell>{team.team_name}</TableCell>
                             <TableCell className="text-center">{team.matches_played}</TableCell>
@@ -392,14 +329,11 @@ const LiveScores = () => {
                               </span>
                             </TableCell>
                             <TableCell className="text-center font-bold">{team.points}</TableCell>
-                          </TableRow>
-                        ))}
+                          </TableRow>)}
                       </TableBody>
                     </Table>
                   </CardContent>
-                </Card>
-              ))
-            )}
+                </Card>)}
           </TabsContent>
         </Tabs>
 
@@ -414,8 +348,7 @@ const LiveScores = () => {
                 </Badge>
               </DialogTitle>
             </DialogHeader>
-            {selectedMatch && (
-              <div className="space-y-6">
+            {selectedMatch && <div className="space-y-6">
                 {/* Score Display */}
                 <div className="text-center py-6 bg-gradient-card rounded-lg">
                   <div className="flex items-center justify-center gap-8">
@@ -429,14 +362,11 @@ const LiveScores = () => {
                       <span className="text-4xl font-bold text-primary">{selectedMatch.away_score ?? 0}</span>
                     </div>
                   </div>
-                  {selectedMatch.minute && (
-                    <p className="text-sm text-muted-foreground mt-2">{selectedMatch.minute}'</p>
-                  )}
+                  {selectedMatch.minute && <p className="text-sm text-muted-foreground mt-2">{selectedMatch.minute}'</p>}
                 </div>
 
                 {/* Match Stats */}
-                {selectedMatch.possession && (
-                  <div className="space-y-4">
+                {selectedMatch.possession && <div className="space-y-4">
                     <h4 className="font-semibold">Match Statistics</h4>
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
@@ -444,48 +374,35 @@ const LiveScores = () => {
                         <span>{selectedMatch.possession.home}% - {selectedMatch.possession.away}%</span>
                       </div>
                       <div className="w-full bg-secondary rounded-full h-2">
-                        <div 
-                          className="bg-primary h-2 rounded-full transition-all duration-300" 
-                          style={{ width: `${selectedMatch.possession.home}%` }}
-                        />
+                        <div className="bg-primary h-2 rounded-full transition-all duration-300" style={{
+                    width: `${selectedMatch.possession.home}%`
+                  }} />
                       </div>
                     </div>
-                  </div>
-                )}
+                  </div>}
 
                 {/* Goal Scorers */}
-                {selectedMatch.goal_scorers && selectedMatch.goal_scorers.length > 0 && (
-                  <div className="space-y-2">
+                {selectedMatch.goal_scorers && selectedMatch.goal_scorers.length > 0 && <div className="space-y-2">
                     <h4 className="font-semibold flex items-center gap-2">
                       <Target className="w-4 h-4" />
                       Goal Scorers
                     </h4>
                     <ul className="space-y-1">
-                      {selectedMatch.goal_scorers.map((scorer, index) => (
-                        <li key={index} className="text-sm text-muted-foreground">⚽ {scorer}</li>
-                      ))}
+                      {selectedMatch.goal_scorers.map((scorer, index) => <li key={index} className="text-sm text-muted-foreground">⚽ {scorer}</li>)}
                     </ul>
-                  </div>
-                )}
+                  </div>}
 
                 {/* Cards */}
-                {selectedMatch.yellow_cards && selectedMatch.yellow_cards.length > 0 && (
-                  <div className="space-y-2">
+                {selectedMatch.yellow_cards && selectedMatch.yellow_cards.length > 0 && <div className="space-y-2">
                     <h4 className="font-semibold">Yellow Cards</h4>
                     <ul className="space-y-1">
-                      {selectedMatch.yellow_cards.map((card, index) => (
-                        <li key={index} className="text-sm text-yellow-600">🟨 {card}</li>
-                      ))}
+                      {selectedMatch.yellow_cards.map((card, index) => <li key={index} className="text-sm text-yellow-600">🟨 {card}</li>)}
                     </ul>
-                  </div>
-                )}
-              </div>
-            )}
+                  </div>}
+              </div>}
           </DialogContent>
         </Dialog>
       </div>
-    </div>
-  )
-}
-
-export default LiveScores
+    </div>;
+};
+export default LiveScores;
