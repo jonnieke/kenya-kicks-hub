@@ -34,6 +34,8 @@ interface LeagueTable {
   goals_against: number;
   goal_difference: number;
   points: number;
+  created_at: string;
+  updated_at: string;
 }
 interface MatchDetails extends Match {
   goal_scorers?: string[];
@@ -48,7 +50,7 @@ const LiveScores = () => {
   const [selectedMatch, setSelectedMatch] = useState<MatchDetails | null>(null);
   const [activeTab, setActiveTab] = useState("live");
 
-  // Fetch matches with real-time updates
+  // Fetch matches with real-time updates - prioritize CHAN
   const {
     data: matches = [],
     isLoading: matchesLoading,
@@ -66,12 +68,24 @@ const LiveScores = () => {
         ascending: true
       });
       if (error) throw error;
-      return data as Match[];
+      
+      // Prioritize African Nations Championship matches
+      const allMatches = data as Match[];
+      const chanMatches = allMatches.filter(match => 
+        match.league.toLowerCase().includes('chan') || 
+        match.league.toLowerCase().includes('african nations championship')
+      );
+      const otherMatches = allMatches.filter(match => 
+        !match.league.toLowerCase().includes('chan') && 
+        !match.league.toLowerCase().includes('african nations championship')
+      );
+      
+      return [...chanMatches, ...otherMatches];
     },
-    refetchInterval: 30000 // Refetch every 30 seconds
+    refetchInterval: 60000 // Reduced to 60 seconds to prevent blinking
   });
 
-  // Fetch league tables
+  // Fetch league tables - prioritize CHAN
   const {
     data: leagueTables = [],
     isLoading: tablesLoading,
@@ -88,8 +102,21 @@ const LiveScores = () => {
         ascending: true
       });
       if (error) throw error;
-      return data as LeagueTable[];
-    }
+      
+      // Prioritize CHAN tables
+      const allTables = data as LeagueTable[];
+      const chanTables = allTables.filter(table => 
+        table.league.toLowerCase().includes('chan') || 
+        table.league.toLowerCase().includes('african nations championship')
+      );
+      const otherTables = allTables.filter(table => 
+        !table.league.toLowerCase().includes('chan') && 
+        !table.league.toLowerCase().includes('african nations championship')
+      );
+      
+      return [...chanTables, ...otherTables];
+    },
+    refetchInterval: 120000 // Refresh tables every 2 minutes to reduce blinking
   });
 
   // Set up real-time subscriptions
@@ -365,6 +392,7 @@ const LiveScores = () => {
                           <TableHead className="text-center w-12">L</TableHead>
                           <TableHead className="text-center w-16">GD</TableHead>
                           <TableHead className="text-center w-12">Pts</TableHead>
+                          <TableHead className="text-center w-20">Last Updated</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -381,6 +409,14 @@ const LiveScores = () => {
                               </span>
                             </TableCell>
                             <TableCell className="text-center font-bold">{team.points}</TableCell>
+                            <TableCell className="text-center text-xs text-muted-foreground">
+                              {new Date(team.updated_at || team.created_at).toLocaleString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </TableCell>
                           </TableRow>)}
                       </TableBody>
                     </Table>
