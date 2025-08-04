@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Trophy, Users, Calendar, TrendingUp, Target, Star, Shield } from "lucide-react";
+import { Trophy, Users, Calendar, TrendingUp, Target, Star, Shield, Zap, Circle } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
@@ -71,6 +71,25 @@ const Leagues = () => {
       if (error) throw error;
       return data as Match[];
     }
+  });
+
+  // Fetch live matches
+  const {
+    data: liveMatches = [],
+    isLoading: liveMatchesLoading
+  } = useQuery({
+    queryKey: ['live_matches'],
+    queryFn: async () => {
+      const {
+        data,
+        error
+      } = await supabase.from('matches').select('*').in('status', ['LIVE', '1H', '2H', 'HT']).order('start_time', {
+        ascending: false
+      }).limit(10);
+      if (error) throw error;
+      return data as Match[];
+    },
+    refetchInterval: 30000 // Auto-refresh every 30 seconds
   });
 
   // Function to fetch fresh data from API-Football
@@ -179,6 +198,46 @@ const Leagues = () => {
             </Button>
           </div>
         </div>
+
+        {/* Live Matches Banner */}
+        {liveMatches.length > 0 && (
+          <Card className="bg-gradient-to-r from-red-500/10 to-orange-500/10 border-red-500/20">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-red-600">
+                <Circle className="w-3 h-3 fill-red-500 animate-pulse" />
+                <Zap className="w-5 h-5" />
+                {liveMatches.length} Live Matches
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+                {liveMatches.slice(0, 6).map(match => (
+                  <div key={match.id} className="bg-background/50 rounded-lg p-3 border">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex-1 text-center">
+                        <div className="font-medium text-sm truncate">{match.home_team}</div>
+                      </div>
+                      <div className="flex items-center gap-2 px-3">
+                        <span className="text-lg font-bold">{match.home_score ?? 0}</span>
+                        <span className="text-red-500 font-medium">-</span>
+                        <span className="text-lg font-bold">{match.away_score ?? 0}</span>
+                      </div>
+                      <div className="flex-1 text-center">
+                        <div className="font-medium text-sm truncate">{match.away_team}</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground truncate">{match.league}</span>
+                      <span className="bg-red-500 text-white px-2 py-1 rounded-full font-medium">
+                        {match.status}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* League Selection */}
         {leagues.length > 0 && <div className="flex gap-2 overflow-x-auto pb-2">
