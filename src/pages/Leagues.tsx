@@ -126,13 +126,26 @@ const Leagues = () => {
     return acc;
   }, {} as Record<string, Match[]>);
 
-  // Get unique leagues
-  const leagues = Object.keys(groupedTables);
+  // Get unique leagues, prioritize CHAN
+  const allLeagues = Object.keys(groupedTables);
+  const chanLeagues = allLeagues.filter(league => 
+    league.includes('African Nations Championship') || 
+    league.includes('CHAN')
+  );
+  const otherLeagues = allLeagues.filter(league => 
+    !league.includes('African Nations Championship') && 
+    !league.includes('CHAN')
+  );
+  const leagues = [...chanLeagues, ...otherLeagues];
 
-  // Set default selected league
+  // Set default selected league to CHAN if available
   useEffect(() => {
     if (leagues.length > 0 && !selectedLeague) {
-      setSelectedLeague(leagues[0]);
+      const chanLeague = leagues.find(league => 
+        league.includes('African Nations Championship') || 
+        league.includes('CHAN')
+      );
+      setSelectedLeague(chanLeague || leagues[0]);
     }
   }, [leagues, selectedLeague]);
 
@@ -183,8 +196,8 @@ const Leagues = () => {
               <Trophy className="w-6 h-6 text-background" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-foreground">Leagues</h1>
-              <p className="text-muted-foreground">Football league standings and statistics</p>
+              <h1 className="text-3xl font-bold text-foreground">CAF African Nations Championship (CHAN)</h1>
+              <p className="text-muted-foreground">Focus on CHAN tournament standings and matches</p>
             </div>
           </div>
           <div className="flex gap-2">
@@ -239,12 +252,22 @@ const Leagues = () => {
           </Card>
         )}
 
-        {/* League Selection */}
+        {/* League Selection - CHAN prioritized */}
         {leagues.length > 0 && <div className="flex gap-2 overflow-x-auto pb-2">
-            {leagues.map(league => <Button key={league} variant={selectedLeague === league ? "default" : "outline"} onClick={() => setSelectedLeague(league)} className="whitespace-nowrap">
-                <Shield className="w-4 h-4 mr-2" />
-                {league}
-              </Button>)}
+            {leagues.map(league => {
+              const isChanLeague = league.includes('African Nations Championship') || league.includes('CHAN');
+              return (
+                <Button 
+                  key={league} 
+                  variant={selectedLeague === league ? "default" : "outline"} 
+                  onClick={() => setSelectedLeague(league)} 
+                  className={`whitespace-nowrap ${isChanLeague ? 'ring-2 ring-primary/50' : ''}`}
+                >
+                  <Shield className="w-4 h-4 mr-2" />
+                  {isChanLeague ? `🏆 ${league}` : league}
+                </Button>
+              );
+            })}
           </div>}
 
         {tablesLoading ? <div className="text-center py-12">
