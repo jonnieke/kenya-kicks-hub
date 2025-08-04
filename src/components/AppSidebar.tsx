@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Home, Activity, Newspaper, TrendingUp, Brain, MessageCircle, Trophy, Users, LogOut, User } from "lucide-react"
+import { Home, Activity, Newspaper, TrendingUp, Brain, MessageCircle, Trophy, Users, LogOut, User, DollarSign } from "lucide-react"
 import { NavLink, useLocation } from "react-router-dom"
 import { useAuth } from "@/contexts/AuthContext"
 import { Button } from "@/components/ui/button"
@@ -26,6 +26,7 @@ const items = [
   { title: "Chat", url: "/chat", icon: MessageCircle },
   { title: "Leagues", url: "/leagues", icon: Trophy },
   { title: "Community", url: "/community", icon: Users },
+  { title: "Affiliates", url: "/affiliates", icon: DollarSign },
 ]
 
 export function AppSidebar() {

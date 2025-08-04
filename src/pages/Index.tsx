@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Trophy, Activity, Newspaper, TrendingUp, Users, Clock, Calendar } from "lucide-react";
 import { Link } from "react-router-dom";
+import { AffiliateRedirect } from "@/components/AffiliateRedirect";
 import heroImage from "@/assets/hero-footballer-scoring.jpg";
 const featuredMatches = [{
   homeTeam: "Arsenal",
@@ -36,6 +37,7 @@ const quickStats = [{
 }];
 const Index = () => {
   return <div className="min-h-screen bg-background p-6">
+      <AffiliateRedirect />
       <div className="max-w-6xl mx-auto space-y-8">
         {/* Hero Section */}
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary/20 via-background to-primary/10 p-8 md:p-16">

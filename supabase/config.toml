@@ -63,3 +63,6 @@ verify_jwt = false
 
 [functions.fetch-football-data]
 verify_jwt = false
+
+[functions.track-affiliate-click]
+verify_jwt = false
