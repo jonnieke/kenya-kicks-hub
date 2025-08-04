@@ -66,20 +66,6 @@ const Index = () => {
               <p className="text-xl text-muted-foreground leading-relaxed">
                 Experience the passion of Kenyan football like never before. Get live scores, breaking news, match predictions, and connect with thousands of fans in real-time.
               </p>
-
-              {/* CAF CHAN Call-to-Action Banner */}
-              <div className="bg-gradient-to-r from-primary/20 to-primary/10 border border-primary/30 rounded-xl p-4 mb-6">
-                <div className="flex items-center gap-3 mb-2">
-                  <Trophy className="w-6 h-6 text-primary" />
-                  <span className="text-primary font-semibold text-lg">🏆 CAF African Cup of Nations CHAN</span>
-                </div>
-                <p className="text-muted-foreground text-sm mb-3">
-                  Follow all the action from Africa's premier football championship - live scores, fixtures & tables
-                </p>
-                <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold">
-                  <Link to="/live-scores">View CHAN Matches & Tables →</Link>
-                </Button>
-              </div>
               
               <div className="flex flex-col sm:flex-row gap-4 pt-4">
                 <Button asChild size="lg" className="bg-gradient-primary text-lg px-8 py-4 shadow-lg hover:shadow-xl transition-all">
@@ -89,22 +75,66 @@ const Index = () => {
                   <Link to="/chat">💬 Join 2.4k Fans</Link>
                 </Button>
               </div>
-              
-              <div className="flex items-center gap-6 pt-4 text-sm text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-match-live rounded-full animate-pulse"></div>
-                  <span>3 Live matches</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-primary rounded-full"></div>
-                  <span>156 Predictions today</span>
-                </div>
-              </div>
             </div>
             
-            <div className="hidden md:block relative">
-              <div className="absolute inset-0 bg-gradient-primary opacity-20 rounded-2xl blur-3xl transform rotate-6"></div>
-              
+            <div className="hidden md:block space-y-6">
+              {/* CAF CHAN Call-to-Action Banner */}
+              <div className="bg-gradient-to-r from-primary/20 to-primary/10 border border-primary/30 rounded-xl p-4">
+                <div className="flex items-center gap-3 mb-2">
+                  <Trophy className="w-6 h-6 text-primary" />
+                  <span className="text-primary font-semibold text-lg">🏆 CAF CHAN</span>
+                </div>
+                <p className="text-muted-foreground text-sm mb-3">
+                  Follow all the action from Africa's premier championship
+                </p>
+                <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold w-full">
+                  <Link to="/live-scores">View Matches →</Link>
+                </Button>
+              </div>
+
+              {/* Live Stats */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-background/50 backdrop-blur-sm rounded-xl p-4 text-center border border-border/50">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <div className="w-2 h-2 bg-match-live rounded-full animate-pulse"></div>
+                    <span className="text-2xl font-bold text-foreground">3</span>
+                  </div>
+                  <div className="text-sm text-muted-foreground">Live Now</div>
+                </div>
+                <div className="bg-background/50 backdrop-blur-sm rounded-xl p-4 text-center border border-border/50">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <Users className="w-4 h-4 text-primary" />
+                    <span className="text-2xl font-bold text-foreground">2.4k</span>
+                  </div>
+                  <div className="text-sm text-muted-foreground">Active Fans</div>
+                </div>
+                <div className="bg-background/50 backdrop-blur-sm rounded-xl p-4 text-center border border-border/50">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <TrendingUp className="w-4 h-4 text-primary" />
+                    <span className="text-2xl font-bold text-foreground">156</span>
+                  </div>
+                  <div className="text-sm text-muted-foreground">Predictions</div>
+                </div>
+                <div className="bg-background/50 backdrop-blur-sm rounded-xl p-4 text-center border border-border/50">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <Activity className="w-4 h-4 text-primary" />
+                    <span className="text-2xl font-bold text-foreground">12</span>
+                  </div>
+                  <div className="text-sm text-muted-foreground">Today's Games</div>
+                </div>
+              </div>
+
+              {/* Featured Match Preview */}
+              <div className="bg-background/50 backdrop-blur-sm rounded-xl p-4 border border-border/50">
+                <div className="flex items-center gap-2 mb-3">
+                  <Badge className="bg-match-live text-white animate-pulse">LIVE</Badge>
+                  <span className="text-sm text-muted-foreground">Premier League</span>
+                </div>
+                <div className="text-center">
+                  <div className="font-semibold text-foreground mb-1">Arsenal vs Chelsea</div>
+                  <div className="text-sm text-muted-foreground">15:30 • Second Half</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
