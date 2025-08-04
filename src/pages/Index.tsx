@@ -87,7 +87,7 @@ const Index = () => {
             
             <div className="hidden md:block relative">
               <div className="absolute inset-0 bg-gradient-primary opacity-20 rounded-2xl blur-3xl transform rotate-6"></div>
-              <img src={heroImage} alt="Footballer scoring a goal" className="relative z-10 w-full h-[500px] object-cover rounded-2xl shadow-2xl transform hover:scale-105 transition-transform duration-500" />
+              
             </div>
           </div>
         </div>
