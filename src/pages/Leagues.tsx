@@ -30,6 +30,7 @@ interface Match {
   status: string;
   league: string;
   start_time: string;
+  venue?: string | null;
 }
 const Leagues = () => {
   const [selectedLeague, setSelectedLeague] = useState<string | null>(null);
@@ -55,7 +56,7 @@ const Leagues = () => {
     }
   });
 
-  // Fetch recent matches
+  // Fetch recent matches with CHAN priority
   const {
     data: matches = [],
     isLoading: matchesLoading
@@ -65,9 +66,28 @@ const Leagues = () => {
       const {
         data,
         error
-      } = await supabase.from('matches').select('*').in('status', ['FT', 'FINISHED']).order('start_time', {
+      } = await supabase.from('matches').select('*').order('start_time', {
         ascending: false
-      }).limit(20);
+      }).limit(50);
+      if (error) throw error;
+      return data as Match[];
+    }
+  });
+
+  // Fetch CHAN specific matches
+  const {
+    data: chanMatches = [],
+    isLoading: chanMatchesLoading
+  } = useQuery({
+    queryKey: ['chan_matches'],
+    queryFn: async () => {
+      const {
+        data,
+        error
+      } = await supabase.from('matches').select('*')
+        .or('league.ilike.%African Nations Championship%,league.ilike.%CHAN%')
+        .order('start_time', { ascending: false })
+        .limit(20);
       if (error) throw error;
       return data as Match[];
     }
@@ -119,12 +139,23 @@ const Leagues = () => {
     return acc;
   }, {} as Record<string, LeagueTable[]>);
 
-  // Group matches by league
+  // Group all matches by league
   const groupedMatches = matches.reduce((acc, match) => {
     if (!acc[match.league]) acc[match.league] = [];
     acc[match.league].push(match);
     return acc;
   }, {} as Record<string, Match[]>);
+
+  // Group CHAN matches by status
+  const chanLiveMatches = chanMatches.filter(match => 
+    ['LIVE', '1H', '2H', 'HT'].includes(match.status)
+  );
+  const chanRecentMatches = chanMatches.filter(match => 
+    ['FT', 'FINISHED'].includes(match.status)
+  );
+  const chanUpcomingMatches = chanMatches.filter(match => 
+    !['LIVE', '1H', '2H', 'HT', 'FT', 'FINISHED'].includes(match.status)
+  );
 
   // Get unique leagues, prioritize CHAN
   const allLeagues = Object.keys(groupedTables);
@@ -138,14 +169,16 @@ const Leagues = () => {
   );
   const leagues = [...chanLeagues, ...otherLeagues];
 
-  // Set default selected league to CHAN if available
+  // Set default selected league to CHAN if available, otherwise show CHAN matches view
   useEffect(() => {
     if (leagues.length > 0 && !selectedLeague) {
       const chanLeague = leagues.find(league => 
         league.includes('African Nations Championship') || 
         league.includes('CHAN')
       );
-      setSelectedLeague(chanLeague || leagues[0]);
+      setSelectedLeague(chanLeague || 'CHAN_TOURNAMENT');
+    } else if (leagues.length === 0 && !selectedLeague) {
+      setSelectedLeague('CHAN_TOURNAMENT');
     }
   }, [leagues, selectedLeague]);
 
@@ -270,14 +303,15 @@ const Leagues = () => {
             })}
           </div>}
 
-        {tablesLoading ? <div className="text-center py-12">
+          {(tablesLoading || chanMatchesLoading) ? <div className="text-center py-12">
             <TrendingUp className="w-12 h-12 animate-spin mx-auto mb-4 text-muted-foreground" />
-            <p className="text-muted-foreground">Loading league data...</p>
-          </div> : leagues.length === 0 ? <div className="text-center py-12">
-            <Trophy className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-            <p className="text-muted-foreground">No league data available</p>
-          </div> : <Tabs defaultValue="standings" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <p className="text-muted-foreground">Loading CHAN tournament data...</p>
+          </div> : <Tabs defaultValue="chan-overview" className="w-full">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="chan-overview" className="flex items-center gap-2">
+                <Trophy className="w-4 h-4" />
+                CHAN Live
+              </TabsTrigger>
               <TabsTrigger value="standings" className="flex items-center gap-2">
                 <Trophy className="w-4 h-4" />
                 Standings
@@ -292,9 +326,165 @@ const Leagues = () => {
               </TabsTrigger>
             </TabsList>
 
+            {/* CHAN Tournament Overview */}
+            <TabsContent value="chan-overview" className="space-y-6">
+              {/* Live CHAN Matches */}
+              {chanLiveMatches.length > 0 && (
+                <Card className="bg-gradient-to-r from-red-500/10 to-orange-500/10 border-red-500/20">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-red-600">
+                      🏆 CHAN Live Matches
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid gap-3 md:grid-cols-2">
+                      {chanLiveMatches.map(match => (
+                        <div key={match.id} className="bg-background/80 rounded-lg p-4 border border-red-500/30">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex-1 text-center">
+                              <div className="font-semibold text-sm">{match.home_team}</div>
+                            </div>
+                            <div className="flex items-center gap-3 px-4">
+                              <span className="text-xl font-bold text-primary">{match.home_score ?? 0}</span>
+                              <span className="text-red-500 font-medium">-</span>
+                              <span className="text-xl font-bold text-primary">{match.away_score ?? 0}</span>
+                            </div>
+                            <div className="flex-1 text-center">
+                              <div className="font-semibold text-sm">{match.away_team}</div>
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="text-muted-foreground">{match.venue || 'TBD'}</span>
+                            <span className="bg-red-500 text-white px-2 py-1 rounded-full font-medium animate-pulse">
+                              {match.status}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Recent CHAN Results */}
+              <Card className="bg-gradient-card">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    🏆 Recent CHAN Results
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {chanRecentMatches.length > 0 ? (
+                    <div className="grid gap-3">
+                      {chanRecentMatches.slice(0, 5).map(match => (
+                        <div key={match.id} className="bg-background/50 rounded-lg p-3 border">
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1 text-center">
+                              <div className="font-medium text-sm">{match.home_team}</div>
+                            </div>
+                            <div className="flex items-center gap-3 px-4">
+                              <span className="text-lg font-bold">{match.home_score ?? 0}</span>
+                              <span className="text-muted-foreground">-</span>
+                              <span className="text-lg font-bold">{match.away_score ?? 0}</span>
+                            </div>
+                            <div className="flex-1 text-center">
+                              <div className="font-medium text-sm">{match.away_team}</div>
+                            </div>
+                          </div>
+                          <div className="mt-2 text-center text-xs text-muted-foreground">
+                            {new Date(match.start_time).toLocaleDateString('en-US', {
+                              weekday: 'short',
+                              month: 'short',
+                              day: 'numeric'
+                             })} • {match.venue || 'TBD'}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <Trophy className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                      <p className="text-muted-foreground">No recent CHAN matches available</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Upcoming CHAN Matches */}
+              {chanUpcomingMatches.length > 0 && (
+                <Card className="bg-gradient-card">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      🗓️ Upcoming CHAN Matches
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid gap-3">
+                      {chanUpcomingMatches.slice(0, 5).map(match => (
+                        <div key={match.id} className="bg-background/50 rounded-lg p-3 border">
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1 text-center">
+                              <div className="font-medium text-sm">{match.home_team}</div>
+                            </div>
+                            <div className="flex items-center gap-3 px-4">
+                              <span className="text-sm text-muted-foreground">vs</span>
+                            </div>
+                            <div className="flex-1 text-center">
+                              <div className="font-medium text-sm">{match.away_team}</div>
+                            </div>
+                          </div>
+                          <div className="mt-2 text-center text-xs text-muted-foreground">
+                            {new Date(match.start_time).toLocaleDateString('en-US', {
+                              weekday: 'short',
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                             })} • {match.venue || 'TBD'}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+
             {/* League Standings */}
             <TabsContent value="standings" className="space-y-6">
-              {selectedLeague && groupedTables[selectedLeague] && <Card className="bg-gradient-card">
+              {selectedLeague === 'CHAN_TOURNAMENT' ? (
+                <Card className="bg-gradient-card">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      🏆 CAF African Nations Championship - Tournament Info
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-center py-8">
+                      <Trophy className="w-16 h-16 mx-auto mb-4 text-yellow-500" />
+                      <h3 className="text-xl font-bold mb-2">CHAN Tournament</h3>
+                      <p className="text-muted-foreground mb-4">
+                        Tournament for players competing in their home country leagues
+                      </p>
+                      <div className="grid md:grid-cols-3 gap-4 text-sm">
+                        <div className="bg-background/50 p-3 rounded-lg">
+                          <div className="font-semibold">Live Matches</div>
+                          <div className="text-lg font-bold text-red-500">{chanLiveMatches.length}</div>
+                        </div>
+                        <div className="bg-background/50 p-3 rounded-lg">
+                          <div className="font-semibold">Recent Results</div>
+                          <div className="text-lg font-bold text-green-500">{chanRecentMatches.length}</div>
+                        </div>
+                        <div className="bg-background/50 p-3 rounded-lg">
+                          <div className="font-semibold">Upcoming</div>
+                          <div className="text-lg font-bold text-blue-500">{chanUpcomingMatches.length}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : selectedLeague && groupedTables[selectedLeague] ? (
+                <Card className="bg-gradient-card">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Trophy className="w-5 h-5" />
@@ -342,13 +532,55 @@ const Leagues = () => {
                       </TableBody>
                     </Table>
                   </CardContent>
-                </Card>}
+                </Card>
+              ) : (
+                <div className="text-center py-12">
+                  <Trophy className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                  <p className="text-muted-foreground">No league table available for this tournament</p>
+                </div>
+              )}
             </TabsContent>
 
             {/* Recent Results */}
             <TabsContent value="recent" className="space-y-4">
-              {selectedLeague && groupedMatches[selectedLeague] ? <div className="grid gap-4">
-                  {groupedMatches[selectedLeague].slice(0, 10).map(match => <Card key={match.id} className="bg-gradient-card">
+              {selectedLeague === 'CHAN_TOURNAMENT' ? (
+                <div className="grid gap-4">
+                  {chanRecentMatches.length > 0 ? chanRecentMatches.slice(0, 10).map(match => (
+                    <Card key={match.id} className="bg-gradient-card">
+                      <CardContent className="pt-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1 text-center">
+                            <h4 className="font-semibold">{match.home_team}</h4>
+                          </div>
+                          <div className="flex items-center gap-4 px-8">
+                            <span className="text-2xl font-bold">{match.home_score ?? 0}</span>
+                            <span className="text-lg text-muted-foreground">-</span>
+                            <span className="text-2xl font-bold">{match.away_score ?? 0}</span>
+                          </div>
+                          <div className="flex-1 text-center">
+                            <h4 className="font-semibold">{match.away_team}</h4>
+                          </div>
+                        </div>
+                        <div className="mt-2 text-center text-sm text-muted-foreground">
+                          {new Date(match.start_time).toLocaleDateString('en-US', {
+                            weekday: 'short',
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })} • {match.venue || 'TBD'}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )) : (
+                    <div className="text-center py-8">
+                      <Calendar className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                      <p className="text-muted-foreground">No recent CHAN matches available</p>
+                    </div>
+                  )}
+                </div>
+              ) : selectedLeague && groupedMatches[selectedLeague] ? <div className="grid gap-4">
+                  {groupedMatches[selectedLeague].filter(match => ['FT', 'FINISHED'].includes(match.status)).slice(0, 10).map(match => <Card key={match.id} className="bg-gradient-card">
                       <CardContent className="pt-4">
                         <div className="flex items-center justify-between">
                           <div className="flex-1 text-center">
