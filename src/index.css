@@ -18,7 +18,7 @@ All colors MUST be HSL.
     --popover: 220 15% 10%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 220 84% 45%;
+    --primary: 220 84% 55%;
     --primary-foreground: 210 40% 98%;
 
     --secondary: 220 15% 15%;
@@ -35,29 +35,29 @@ All colors MUST be HSL.
 
     --border: 220 15% 20%;
     --input: 220 15% 20%;
-    --ring: 220 84% 45%;
+    --ring: 220 84% 55%;
 
     --radius: 0.75rem;
 
     /* Football-specific colors */
-    --football-blue: 220 84% 45%;
+    --football-blue: 220 84% 55%;
     --football-gold: 35 91% 55%;
     --match-live: 0 84% 60%;
     --match-upcoming: 35 91% 55%;
     --match-finished: 215 20% 65%;
 
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(220 84% 45%), hsl(35 91% 55%));
+    --gradient-primary: linear-gradient(135deg, hsl(220 84% 55%), hsl(35 91% 55%));
     --gradient-card: linear-gradient(145deg, hsl(220 15% 10%), hsl(220 15% 12%));
 
     --sidebar-background: 220 15% 8%;
     --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 220 84% 45%;
+    --sidebar-primary: 220 84% 55%;
     --sidebar-primary-foreground: 210 40% 98%;
     --sidebar-accent: 220 15% 15%;
     --sidebar-accent-foreground: 210 40% 98%;
     --sidebar-border: 220 15% 20%;
-    --sidebar-ring: 220 84% 45%;
+    --sidebar-ring: 220 84% 55%;
   }
 
   .dark {
@@ -68,7 +68,7 @@ All colors MUST be HSL.
     --card-foreground: 210 40% 98%;
     --popover: 220 15% 10%;
     --popover-foreground: 210 40% 98%;
-    --primary: 220 84% 45%;
+    --primary: 220 84% 55%;
     --primary-foreground: 210 40% 98%;
     --secondary: 220 15% 15%;
     --secondary-foreground: 210 40% 98%;
@@ -80,15 +80,15 @@ All colors MUST be HSL.
     --destructive-foreground: 210 40% 98%;
     --border: 220 15% 20%;
     --input: 220 15% 20%;
-    --ring: 220 84% 45%;
+    --ring: 220 84% 55%;
     --sidebar-background: 220 15% 8%;
     --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 220 84% 45%;
+    --sidebar-primary: 220 84% 55%;
     --sidebar-primary-foreground: 210 40% 98%;
     --sidebar-accent: 220 15% 15%;
     --sidebar-accent-foreground: 210 40% 98%;
     --sidebar-border: 220 15% 20%;
-    --sidebar-ring: 220 84% 45%;
+    --sidebar-ring: 220 84% 55%;
   }
 }
 
