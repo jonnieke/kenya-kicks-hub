@@ -42,17 +42,20 @@ const Index = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchCAFMatches = async () => {
+    const fetchCurrentMatches = async () => {
       try {
+        const today = new Date().toISOString().split('T')[0];
+        
         const { data, error } = await supabase
           .from('matches')
           .select('*')
-          .ilike('league', '%CAF%')
+          .or(`status.eq.live,status.eq.upcoming,match_date.gte.${today}`)
+          .order('status.eq.live', { ascending: false })
           .order('match_date', { ascending: true })
           .limit(3);
 
         if (error) {
-          console.error('Error fetching CAF matches:', error);
+          console.error('Error fetching current matches:', error);
           return;
         }
 
@@ -66,7 +69,7 @@ const Index = () => {
       }
     };
 
-    fetchCAFMatches();
+    fetchCurrentMatches();
   }, []);
 
   const formatMatchTime = (startTime: string, matchDate: string) => {
