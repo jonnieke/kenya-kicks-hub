@@ -73,6 +73,26 @@ const Leagues = () => {
     }
   });
 
+  // Function to fetch fresh data from API-Football
+  const fetchFreshData = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('fetch-football-data', {
+        body: JSON.stringify({ operation: 'all' })
+      });
+      
+      if (error) throw error;
+      
+      // Refetch the cached data to update the UI
+      refetchTables();
+      
+      console.log('Fresh data fetched:', data);
+      return data;
+    } catch (error) {
+      console.error('Error fetching fresh data:', error);
+      throw error;
+    }
+  };
+
   // Group tables by league
   const groupedTables = leagueTables.reduce((acc, team) => {
     if (!acc[team.league]) acc[team.league] = [];
@@ -152,6 +172,10 @@ const Leagues = () => {
             <Button onClick={() => refetchTables()} disabled={tablesLoading} variant="outline" size="sm">
               <TrendingUp className={`w-4 h-4 mr-2 ${tablesLoading ? 'animate-spin' : ''}`} />
               Refresh
+            </Button>
+            <Button onClick={fetchFreshData} variant="default" size="sm">
+              <Trophy className="w-4 h-4 mr-2" />
+              Fetch Live Data
             </Button>
           </div>
         </div>

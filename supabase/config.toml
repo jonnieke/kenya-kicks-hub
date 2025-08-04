@@ -60,3 +60,6 @@ verify_jwt = false
 
 [functions.scrape-caf-matches]
 verify_jwt = false
+
+[functions.fetch-football-data]
+verify_jwt = false
