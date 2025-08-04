@@ -41,98 +41,122 @@ const Index = () => {
       <AffiliateRedirect />
       <div className="max-w-6xl mx-auto space-y-8">
         {/* Hero Section */}
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary/20 via-background to-primary/10 p-8 md:p-16">
-          <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-background/60 to-transparent z-10" />
-          <div className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-40" style={{
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary/20 via-background to-primary/10 p-6 md:p-12 lg:p-16">
+          <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/70 to-background/40 z-10" />
+          <div className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-30" style={{
           backgroundImage: `url(${heroImage})`
         }} />
           
-          <div className="relative z-20 grid md:grid-cols-2 gap-8 items-center max-w-6xl mx-auto">
-            <div className="text-left space-y-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-16 h-16 bg-gradient-primary rounded-2xl flex items-center justify-center shadow-lg">
-                  <Trophy className="w-10 h-10 text-background" />
+          <div className="relative z-20 max-w-7xl mx-auto">
+            <div className="grid lg:grid-cols-12 gap-8 items-start">
+              {/* Main Content - Left Side */}
+              <div className="lg:col-span-7 space-y-8">
+                <div className="flex items-center gap-3">
+                  <div className="w-14 h-14 md:w-16 md:h-16 bg-gradient-primary rounded-2xl flex items-center justify-center shadow-lg">
+                    <Trophy className="w-8 h-8 md:w-10 md:h-10 text-background" />
+                  </div>
+                  <div className="text-xs md:text-sm font-medium text-primary uppercase tracking-wider">
+                    🔥 Kenya's #1 Football Hub
+                  </div>
                 </div>
-                <div className="text-sm font-medium text-primary uppercase tracking-wider">
-                  🔥 Kenya's #1 Football Hub
+                
+                <div className="space-y-6">
+                  <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight">
+                    <span className="text-foreground">Ball</span>
+                    <span className="bg-gradient-primary bg-clip-text text-transparent">Mtaani</span>
+                  </h1>
+                  
+                  <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl">
+                    Experience the passion of Kenyan football like never before. Get live scores, breaking news, match predictions, and connect with thousands of fans in real-time.
+                  </p>
+                  
+                  <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                    <Button asChild size="lg" className="bg-gradient-primary text-lg px-8 py-4 shadow-lg hover:shadow-xl transition-all">
+                      <Link to="/live-scores">🏟️ Live Matches</Link>
+                    </Button>
+                    <Button variant="outline" asChild size="lg" className="text-lg px-8 py-4 border-2">
+                      <Link to="/chat">💬 Join 2.4k Fans</Link>
+                    </Button>
+                  </div>
                 </div>
-              </div>
-              
-              <h1 className="text-6xl md:text-7xl font-bold leading-tight">
-                <span className="text-foreground">Ball</span>
-                <span className="bg-gradient-primary bg-clip-text text-transparent">Mtaani</span>
-              </h1>
-              
-              <p className="text-xl text-muted-foreground leading-relaxed">
-                Experience the passion of Kenyan football like never before. Get live scores, breaking news, match predictions, and connect with thousands of fans in real-time.
-              </p>
-              
-              <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                <Button asChild size="lg" className="bg-gradient-primary text-lg px-8 py-4 shadow-lg hover:shadow-xl transition-all">
-                  <Link to="/live-scores">🏟️ Live Matches</Link>
-                </Button>
-                <Button variant="outline" asChild size="lg" className="text-lg px-8 py-4 border-2">
-                  <Link to="/chat">💬 Join 2.4k Fans</Link>
-                </Button>
-              </div>
-            </div>
-            
-            <div className="hidden md:block space-y-6">
-              {/* CAF CHAN Call-to-Action Banner */}
-              <div className="bg-gradient-to-r from-primary/20 to-primary/10 border border-primary/30 rounded-xl p-4">
-                <div className="flex items-center gap-3 mb-2">
-                  <Trophy className="w-6 h-6 text-primary" />
-                  <span className="text-primary font-semibold text-lg">🏆 CAF CHAN</span>
-                </div>
-                <p className="text-muted-foreground text-sm mb-3">
-                  Follow all the action from Africa's premier championship
-                </p>
-                <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold w-full">
-                  <Link to="/live-scores">View Matches →</Link>
-                </Button>
-              </div>
 
-              {/* Live Stats */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-background/50 backdrop-blur-sm rounded-xl p-4 text-center border border-border/50">
-                  <div className="flex items-center justify-center gap-2 mb-2">
-                    <div className="w-2 h-2 bg-match-live rounded-full animate-pulse"></div>
-                    <span className="text-2xl font-bold text-foreground">3</span>
+                {/* Mobile Stats - Show on mobile/tablet */}
+                <div className="lg:hidden grid grid-cols-2 gap-4 pt-4">
+                  <div className="bg-background/60 backdrop-blur-sm rounded-xl p-4 text-center border border-border/50">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <div className="w-2 h-2 bg-match-live rounded-full animate-pulse"></div>
+                      <span className="text-xl font-bold text-foreground">3</span>
+                    </div>
+                    <div className="text-xs text-muted-foreground">Live Now</div>
                   </div>
-                  <div className="text-sm text-muted-foreground">Live Now</div>
-                </div>
-                <div className="bg-background/50 backdrop-blur-sm rounded-xl p-4 text-center border border-border/50">
-                  <div className="flex items-center justify-center gap-2 mb-2">
-                    <Users className="w-4 h-4 text-primary" />
-                    <span className="text-2xl font-bold text-foreground">2.4k</span>
+                  <div className="bg-background/60 backdrop-blur-sm rounded-xl p-4 text-center border border-border/50">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <Users className="w-3 h-3 text-primary" />
+                      <span className="text-xl font-bold text-foreground">2.4k</span>
+                    </div>
+                    <div className="text-xs text-muted-foreground">Active Fans</div>
                   </div>
-                  <div className="text-sm text-muted-foreground">Active Fans</div>
-                </div>
-                <div className="bg-background/50 backdrop-blur-sm rounded-xl p-4 text-center border border-border/50">
-                  <div className="flex items-center justify-center gap-2 mb-2">
-                    <TrendingUp className="w-4 h-4 text-primary" />
-                    <span className="text-2xl font-bold text-foreground">156</span>
-                  </div>
-                  <div className="text-sm text-muted-foreground">Predictions</div>
-                </div>
-                <div className="bg-background/50 backdrop-blur-sm rounded-xl p-4 text-center border border-border/50">
-                  <div className="flex items-center justify-center gap-2 mb-2">
-                    <Activity className="w-4 h-4 text-primary" />
-                    <span className="text-2xl font-bold text-foreground">12</span>
-                  </div>
-                  <div className="text-sm text-muted-foreground">Today's Games</div>
                 </div>
               </div>
-
-              {/* Featured Match Preview */}
-              <div className="bg-background/50 backdrop-blur-sm rounded-xl p-4 border border-border/50">
-                <div className="flex items-center gap-2 mb-3">
-                  <Badge className="bg-match-live text-white animate-pulse">LIVE</Badge>
-                  <span className="text-sm text-muted-foreground">Premier League</span>
+              
+              {/* Right Side Content - Desktop Only */}
+              <div className="hidden lg:block lg:col-span-5 space-y-6">
+                {/* CAF CHAN Call-to-Action Banner */}
+                <div className="bg-gradient-to-r from-primary/20 to-primary/10 border border-primary/30 rounded-xl p-5">
+                  <div className="flex items-center gap-3 mb-3">
+                    <Trophy className="w-6 h-6 text-primary" />
+                    <span className="text-primary font-semibold text-lg">🏆 CAF CHAN</span>
+                  </div>
+                  <p className="text-muted-foreground text-sm mb-4 leading-relaxed">
+                    Follow all the action from Africa's premier championship
+                  </p>
+                  <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold w-full">
+                    <Link to="/live-scores">View Matches →</Link>
+                  </Button>
                 </div>
-                <div className="text-center">
-                  <div className="font-semibold text-foreground mb-1">Arsenal vs Chelsea</div>
-                  <div className="text-sm text-muted-foreground">15:30 • Second Half</div>
+
+                {/* Live Stats Grid */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-background/60 backdrop-blur-sm rounded-xl p-4 text-center border border-border/50 hover:border-primary/30 transition-colors">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <div className="w-2 h-2 bg-match-live rounded-full animate-pulse"></div>
+                      <span className="text-2xl font-bold text-foreground">3</span>
+                    </div>
+                    <div className="text-xs text-muted-foreground">Live Now</div>
+                  </div>
+                  <div className="bg-background/60 backdrop-blur-sm rounded-xl p-4 text-center border border-border/50 hover:border-primary/30 transition-colors">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <Users className="w-4 h-4 text-primary" />
+                      <span className="text-2xl font-bold text-foreground">2.4k</span>
+                    </div>
+                    <div className="text-xs text-muted-foreground">Active Fans</div>
+                  </div>
+                  <div className="bg-background/60 backdrop-blur-sm rounded-xl p-4 text-center border border-border/50 hover:border-primary/30 transition-colors">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <TrendingUp className="w-4 h-4 text-primary" />
+                      <span className="text-2xl font-bold text-foreground">156</span>
+                    </div>
+                    <div className="text-xs text-muted-foreground">Predictions</div>
+                  </div>
+                  <div className="bg-background/60 backdrop-blur-sm rounded-xl p-4 text-center border border-border/50 hover:border-primary/30 transition-colors">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <Activity className="w-4 h-4 text-primary" />
+                      <span className="text-2xl font-bold text-foreground">12</span>
+                    </div>
+                    <div className="text-xs text-muted-foreground">Today's Games</div>
+                  </div>
+                </div>
+
+                {/* Featured Match Preview */}
+                <div className="bg-background/60 backdrop-blur-sm rounded-xl p-5 border border-border/50 hover:border-primary/30 transition-colors">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Badge className="bg-match-live text-white animate-pulse text-xs">LIVE</Badge>
+                    <span className="text-sm text-muted-foreground">Premier League</span>
+                  </div>
+                  <div className="text-center">
+                    <div className="font-semibold text-foreground mb-2">Arsenal vs Chelsea</div>
+                    <div className="text-sm text-muted-foreground">15:30 • Second Half</div>
+                  </div>
                 </div>
               </div>
             </div>
