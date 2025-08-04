@@ -146,16 +146,20 @@ const Leagues = () => {
     return acc;
   }, {} as Record<string, Match[]>);
 
-  // Group CHAN matches by status
+  // Group CHAN matches by status and time
+  const now = new Date();
   const chanLiveMatches = chanMatches.filter(match => 
     ['LIVE', '1H', '2H', 'HT'].includes(match.status)
   );
   const chanRecentMatches = chanMatches.filter(match => 
-    ['FT', 'FINISHED'].includes(match.status)
+    ['FT', 'FINISHED'].includes(match.status) ||
+    (match.start_time && new Date(match.start_time) < now && !['LIVE', '1H', '2H', 'HT'].includes(match.status))
   );
   const chanUpcomingMatches = chanMatches.filter(match => 
+    match.start_time && 
+    new Date(match.start_time) > now &&
     !['LIVE', '1H', '2H', 'HT', 'FT', 'FINISHED'].includes(match.status)
-  );
+  ).sort((a, b) => new Date(a.start_time!).getTime() - new Date(b.start_time!).getTime());
 
   // Get unique leagues, prioritize CHAN
   const allLeagues = Object.keys(groupedTables);
