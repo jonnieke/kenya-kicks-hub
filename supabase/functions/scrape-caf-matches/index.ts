@@ -78,7 +78,7 @@ serve(async (req) => {
     let matches = [];
 
     // Try to extract from markdown content
-    const markdownContent = firecrawlData.data?.markdown || '';
+    const markdownContent = firecrawlData?.data?.markdown || '';
     
     // Create sample CAF Championship matches based on recent tournament format
     const yesterday = new Date();
