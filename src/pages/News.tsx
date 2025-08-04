@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Newspaper, Clock, Eye } from "lucide-react"
 import { NewsScraper } from "@/components/NewsScraper"
+import { BannerAd, InArticleAd } from "@/components/AdSense"
 
 const newsArticles = [
   {
@@ -51,6 +52,11 @@ const News = () => {
         </div>
 
         <NewsScraper />
+
+        {/* Banner Ad */}
+        <div className="flex justify-center">
+          <BannerAd className="w-full max-w-4xl" />
+        </div>
 
         <div>
           <h2 className="text-2xl font-bold text-foreground mb-4">Local Football News</h2>

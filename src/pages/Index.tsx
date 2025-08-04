@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Trophy, Activity, Newspaper, TrendingUp, Users, Clock, Calendar } from "lucide-react";
 import { Link } from "react-router-dom";
 import { AffiliateRedirect } from "@/components/AffiliateRedirect";
+import { BannerAd, SidebarAd } from "@/components/AdSense";
 import heroImage from "@/assets/hero-footballer-scoring.jpg";
 const featuredMatches = [{
   homeTeam: "Arsenal",
@@ -106,6 +107,11 @@ const Index = () => {
               
             </div>
           </div>
+        </div>
+
+        {/* Top Banner Ad */}
+        <div className="flex justify-center">
+          <BannerAd className="w-full max-w-4xl" />
         </div>
 
         {/* Quick Stats */}

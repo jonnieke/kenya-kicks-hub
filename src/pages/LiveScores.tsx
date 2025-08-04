@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Clock, Calendar, RefreshCw, Trophy, Target, Timer, Play, Users } from "lucide-react";
+import { SidebarAd, BannerAd } from "@/components/AdSense";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -309,6 +310,11 @@ const LiveScores = () => {
               Refresh
             </Button>
           </div>
+        </div>
+
+        {/* Top Banner Ad */}
+        <div className="flex justify-center">
+          <BannerAd className="w-full max-w-4xl" />
         </div>
 
         {/* Tabs Navigation */}
