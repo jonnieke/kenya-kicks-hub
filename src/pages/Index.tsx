@@ -63,6 +63,20 @@ const Index = () => {
               <p className="text-xl text-muted-foreground leading-relaxed">
                 Experience the passion of Kenyan football like never before. Get live scores, breaking news, match predictions, and connect with thousands of fans in real-time.
               </p>
+
+              {/* CAF CHAN Call-to-Action Banner */}
+              <div className="bg-gradient-to-r from-primary/20 to-primary/10 border border-primary/30 rounded-xl p-4 mb-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <Trophy className="w-6 h-6 text-primary" />
+                  <span className="text-primary font-semibold text-lg">🏆 CAF African Cup of Nations CHAN</span>
+                </div>
+                <p className="text-muted-foreground text-sm mb-3">
+                  Follow all the action from Africa's premier football championship - live scores, fixtures & tables
+                </p>
+                <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold">
+                  <Link to="/live-scores">View CHAN Matches & Tables →</Link>
+                </Button>
+              </div>
               
               <div className="flex flex-col sm:flex-row gap-4 pt-4">
                 <Button asChild size="lg" className="bg-gradient-primary text-lg px-8 py-4 shadow-lg hover:shadow-xl transition-all">
