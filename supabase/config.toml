@@ -57,3 +57,6 @@ verify_jwt = false
 
 [functions.get-live-scores]
 verify_jwt = false
+
+[functions.scrape-caf-matches]
+verify_jwt = false

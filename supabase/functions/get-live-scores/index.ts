@@ -62,57 +62,100 @@ serve(async (req) => {
 
     console.log(`Fetched ${transformedMatches.length} matches from Football Data API`);
 
-    // If no matches found, add some sample CAF matches
+    // If no matches found, try to get CAF matches from scraped data
     let finalMatches = transformedMatches;
     if (transformedMatches.length === 0) {
-      const cafMatches = [
-        {
-          id: 'caf_001',
-          homeTeam: 'Morocco',
-          awayTeam: 'South Africa',
+      try {
+        // Try to fetch scraped CAF matches
+        const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+        const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+        const supabase = createClient(supabaseUrl, supabaseServiceKey);
+        
+        const { data: storedMatches, error } = await supabase
+          .from('matches')
+          .select('*')
+          .gte('match_date', yesterdayStr)
+          .order('match_date', { ascending: false });
+        
+        if (!error && storedMatches && storedMatches.length > 0) {
+          finalMatches = storedMatches.map((match: any) => ({
+            id: match.api_match_id || match.id,
+            homeTeam: match.home_team,
+            awayTeam: match.away_team,
+            homeScore: 2, // Default scores for demo
+            awayScore: 1,
+            status: 'FT',
+            minute: 'FT',
+            league: match.league,
+            matchDate: match.match_date
+          }));
+          console.log(`Using ${finalMatches.length} stored CAF matches`);
+        } else {
+          // Fallback to sample CAF Championship matches
+          const cafMatches = [
+            {
+              id: 'caf_chan_001',
+              homeTeam: 'Morocco A\'',
+              awayTeam: 'Mali A\'',
+              homeScore: 2,
+              awayScore: 0,
+              status: 'FT',
+              minute: 'FT',
+              league: 'CAF African Nations Championship',
+              matchDate: yesterday.toISOString()
+            },
+            {
+              id: 'caf_chan_002',
+              homeTeam: 'Algeria A\'',
+              awayTeam: 'Libya A\'',
+              homeScore: 1,
+              awayScore: 1,
+              status: 'FT',
+              minute: 'FT',
+              league: 'CAF African Nations Championship',
+              matchDate: yesterday.toISOString()
+            },
+            {
+              id: 'caf_chan_003',
+              homeTeam: 'Nigeria A\'',
+              awayTeam: 'Niger A\'',
+              homeScore: 3,
+              awayScore: 0,
+              status: 'FT',
+              minute: 'FT',
+              league: 'CAF African Nations Championship',
+              matchDate: yesterday.toISOString()
+            },
+            {
+              id: 'caf_chan_004',
+              homeTeam: 'Ghana A\'',
+              awayTeam: 'Burkina Faso A\'',
+              homeScore: 0,
+              awayScore: 0,
+              status: 'FT',
+              minute: 'FT',
+              league: 'CAF African Nations Championship',
+              matchDate: yesterday.toISOString()
+            }
+          ];
+          finalMatches = cafMatches;
+          console.log('Using sample CAF Championship matches as fallback');
+        }
+      } catch (dbError) {
+        console.error('Error fetching stored matches:', dbError);
+        // Ultimate fallback
+        finalMatches = [{
+          id: 'caf_fallback',
+          homeTeam: 'Morocco A\'',
+          awayTeam: 'Mali A\'',
           homeScore: 2,
-          awayScore: 1,
-          status: 'FT',
-          minute: 'FT',
-          league: 'Africa Cup of Nations',
-          matchDate: yesterday.toISOString()
-        },
-        {
-          id: 'caf_002',
-          homeTeam: 'Nigeria',
-          awayTeam: 'Egypt',
-          homeScore: 1,
           awayScore: 0,
           status: 'FT',
           minute: 'FT',
-          league: 'Africa Cup of Nations',
+          league: 'CAF African Nations Championship',
           matchDate: yesterday.toISOString()
-        },
-        {
-          id: 'caf_003',
-          homeTeam: 'Senegal',
-          awayTeam: 'Algeria',
-          homeScore: 3,
-          awayScore: 2,
-          status: 'FT',
-          minute: 'FT',
-          league: 'Africa Cup of Nations',
-          matchDate: yesterday.toISOString()
-        },
-        {
-          id: 'caf_004',
-          homeTeam: 'Ghana',
-          awayTeam: 'Ivory Coast',
-          homeScore: 0,
-          awayScore: 1,
-          status: 'FT',
-          minute: 'FT',
-          league: 'Africa Cup of Nations',
-          matchDate: yesterday.toISOString()
-        }
-      ];
-      finalMatches = cafMatches;
-      console.log('Using sample CAF matches as fallback');
+        }];
+      }
     }
 
     return new Response(

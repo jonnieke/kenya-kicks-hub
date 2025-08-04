@@ -40,6 +40,28 @@ const LiveScores = () => {
     }
   }
 
+  const scrapeCAFMatches = async () => {
+    try {
+      setLoading(true)
+      toast.info('Scraping latest CAF matches...')
+      
+      const { data, error } = await supabase.functions.invoke('scrape-caf-matches')
+      
+      if (error) {
+        throw error
+      }
+
+      // After scraping, fetch updated live scores
+      await fetchLiveScores()
+      toast.success(`Scraped ${data.matches?.length || 0} CAF matches`)
+    } catch (error) {
+      console.error('Error scraping CAF matches:', error)
+      toast.error('Failed to scrape CAF matches')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   useEffect(() => {
     fetchLiveScores()
   }, [])
@@ -57,15 +79,26 @@ const LiveScores = () => {
               <p className="text-muted-foreground">Real-time football match updates</p>
             </div>
           </div>
-          <Button 
-            onClick={fetchLiveScores} 
-            disabled={loading}
-            variant="outline"
-            size="sm"
-          >
-            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              onClick={scrapeCAFMatches} 
+              disabled={loading}
+              variant="default"
+              size="sm"
+            >
+              <Calendar className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              Scrape CAF
+            </Button>
+            <Button 
+              onClick={fetchLiveScores} 
+              disabled={loading}
+              variant="outline"
+              size="sm"
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+          </div>
         </div>
 
         {loading && matches.length === 0 ? (
