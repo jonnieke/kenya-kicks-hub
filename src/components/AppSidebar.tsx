@@ -1,7 +1,8 @@
-import { useState } from "react"
-import { Home, Activity, Newspaper, TrendingUp, Brain, MessageCircle, Trophy, Users, LogOut, User, DollarSign } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Home, Activity, Newspaper, TrendingUp, Brain, MessageCircle, Trophy, Users, LogOut, User, DollarSign, Shield } from "lucide-react"
 import { NavLink, useLocation } from "react-router-dom"
 import { useAuth } from "@/contexts/AuthContext"
+import { supabase } from "@/integrations/supabase/client"
 import { Button } from "@/components/ui/button"
 
 import {
@@ -35,6 +36,26 @@ export function AppSidebar() {
   const currentPath = location.pathname
   const isCollapsed = state === "collapsed"
   const { user, signOut } = useAuth()
+  const [isAdmin, setIsAdmin] = useState(false)
+
+  useEffect(() => {
+    const checkAdminRole = async () => {
+      if (!user) return;
+      
+      try {
+        const { data: roles } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id);
+        
+        setIsAdmin(roles?.some((role: any) => role.role === 'admin'));
+      } catch (error) {
+        console.error('Error checking admin role:', error);
+      }
+    };
+
+    checkAdminRole();
+  }, [user]);
 
   const isActive = (path: string) => currentPath === path
   const isExpanded = items.some((i) => isActive(i.url))
@@ -80,6 +101,25 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {/* Admin Section */}
+        {isAdmin && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Admin</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <NavLink to="/admin" className={getNavCls}>
+                      <Shield className="mr-2 h-4 w-4" />
+                      {!isCollapsed && <span>Admin Panel</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
 
         {/* User Section */}
         {user && (

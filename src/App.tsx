@@ -15,6 +15,7 @@ import Chat from "./pages/Chat";
 import Community from "./pages/Community";
 import Leagues from "./pages/Leagues";
 import Affiliates from "./pages/Affiliates";
+import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 
@@ -44,6 +45,7 @@ const App = () => (
                 <Route path="/community" element={<Community />} />
                 <Route path="/leagues" element={<Leagues />} />
                 <Route path="/affiliates" element={<Affiliates />} />
+                <Route path="/admin" element={<Admin />} />
                 <Route path="/auth" element={<Auth />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
