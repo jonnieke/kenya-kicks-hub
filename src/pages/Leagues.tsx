@@ -7,7 +7,6 @@ import { Trophy, Users, Calendar, TrendingUp, Target, Star, Shield } from "lucid
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
-
 interface LeagueTable {
   id: string;
   league: string;
@@ -22,7 +21,6 @@ interface LeagueTable {
   goal_difference: number;
   points: number;
 }
-
 interface Match {
   id: string;
   home_team: string;
@@ -33,7 +31,6 @@ interface Match {
   league: string;
   start_time: string;
 }
-
 const Leagues = () => {
   const [selectedLeague, setSelectedLeague] = useState<string | null>(null);
 
@@ -45,12 +42,14 @@ const Leagues = () => {
   } = useQuery({
     queryKey: ['league_tables'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('league_tables')
-        .select('*')
-        .order('league', { ascending: true })
-        .order('position', { ascending: true });
-      
+      const {
+        data,
+        error
+      } = await supabase.from('league_tables').select('*').order('league', {
+        ascending: true
+      }).order('position', {
+        ascending: true
+      });
       if (error) throw error;
       return data as LeagueTable[];
     }
@@ -63,13 +62,12 @@ const Leagues = () => {
   } = useQuery({
     queryKey: ['recent_matches'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('matches')
-        .select('*')
-        .in('status', ['FT', 'FINISHED'])
-        .order('start_time', { ascending: false })
-        .limit(20);
-      
+      const {
+        data,
+        error
+      } = await supabase.from('matches').select('*').in('status', ['FT', 'FINISHED']).order('start_time', {
+        ascending: false
+      }).limit(20);
       if (error) throw error;
       return data as Match[];
     }
@@ -101,48 +99,43 @@ const Leagues = () => {
 
   // Set up real-time subscriptions
   useEffect(() => {
-    const tablesChannel = supabase
-      .channel('league-tables-changes')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'league_tables'
-      }, () => {
-        refetchTables();
-      })
-      .subscribe();
-
+    const tablesChannel = supabase.channel('league-tables-changes').on('postgres_changes', {
+      event: '*',
+      schema: 'public',
+      table: 'league_tables'
+    }, () => {
+      refetchTables();
+    }).subscribe();
     return () => {
       supabase.removeChannel(tablesChannel);
     };
   }, [refetchTables]);
-
   const getPositionIcon = (position: number) => {
     if (position === 1) return <Trophy className="w-4 h-4 text-yellow-500" />;
     if (position === 2) return <Star className="w-4 h-4 text-gray-400" />;
     if (position === 3) return <Target className="w-4 h-4 text-amber-600" />;
     return null;
   };
-
   const getPositionBadge = (position: number, totalTeams: number) => {
     if (position === 1) return "champion";
     if (position <= 4) return "qualification";
     if (position >= totalTeams - 2) return "relegation";
     return "safe";
   };
-
   const getPositionColor = (position: number, totalTeams: number) => {
     const badge = getPositionBadge(position, totalTeams);
     switch (badge) {
-      case "champion": return "bg-yellow-500/20 text-yellow-700 border-yellow-500/50";
-      case "qualification": return "bg-green-500/20 text-green-700 border-green-500/50";
-      case "relegation": return "bg-red-500/20 text-red-700 border-red-500/50";
-      default: return "";
+      case "champion":
+        return "bg-yellow-500/20 text-yellow-700 border-yellow-500/50";
+      case "qualification":
+        return "bg-green-500/20 text-green-700 border-green-500/50";
+      case "relegation":
+        return "bg-red-500/20 text-red-700 border-red-500/50";
+      default:
+        return "";
     }
   };
-
-  return (
-    <div className="min-h-screen bg-background p-6">
+  return <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -152,7 +145,7 @@ const Leagues = () => {
             </div>
             <div>
               <h1 className="text-3xl font-bold text-foreground">Leagues</h1>
-              <p className="text-muted-foreground">Kenyan football league standings and statistics</p>
+              <p className="text-muted-foreground">Football league standings and statistics</p>
             </div>
           </div>
           <div className="flex gap-2">
@@ -164,34 +157,20 @@ const Leagues = () => {
         </div>
 
         {/* League Selection */}
-        {leagues.length > 0 && (
-          <div className="flex gap-2 overflow-x-auto pb-2">
-            {leagues.map((league) => (
-              <Button
-                key={league}
-                variant={selectedLeague === league ? "default" : "outline"}
-                onClick={() => setSelectedLeague(league)}
-                className="whitespace-nowrap"
-              >
+        {leagues.length > 0 && <div className="flex gap-2 overflow-x-auto pb-2">
+            {leagues.map(league => <Button key={league} variant={selectedLeague === league ? "default" : "outline"} onClick={() => setSelectedLeague(league)} className="whitespace-nowrap">
                 <Shield className="w-4 h-4 mr-2" />
                 {league}
-              </Button>
-            ))}
-          </div>
-        )}
+              </Button>)}
+          </div>}
 
-        {tablesLoading ? (
-          <div className="text-center py-12">
+        {tablesLoading ? <div className="text-center py-12">
             <TrendingUp className="w-12 h-12 animate-spin mx-auto mb-4 text-muted-foreground" />
             <p className="text-muted-foreground">Loading league data...</p>
-          </div>
-        ) : leagues.length === 0 ? (
-          <div className="text-center py-12">
+          </div> : leagues.length === 0 ? <div className="text-center py-12">
             <Trophy className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
             <p className="text-muted-foreground">No league data available</p>
-          </div>
-        ) : (
-          <Tabs defaultValue="standings" className="w-full">
+          </div> : <Tabs defaultValue="standings" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="standings" className="flex items-center gap-2">
                 <Trophy className="w-4 h-4" />
@@ -209,8 +188,7 @@ const Leagues = () => {
 
             {/* League Standings */}
             <TabsContent value="standings" className="space-y-6">
-              {selectedLeague && groupedTables[selectedLeague] && (
-                <Card className="bg-gradient-card">
+              {selectedLeague && groupedTables[selectedLeague] && <Card className="bg-gradient-card">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Trophy className="w-5 h-5" />
@@ -234,11 +212,7 @@ const Leagues = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {groupedTables[selectedLeague].map((team) => (
-                          <TableRow 
-                            key={team.id}
-                            className={getPositionColor(team.position, groupedTables[selectedLeague].length)}
-                          >
+                        {groupedTables[selectedLeague].map(team => <TableRow key={team.id} className={getPositionColor(team.position, groupedTables[selectedLeague].length)}>
                             <TableCell className="font-medium">
                               <div className="flex items-center gap-2">
                                 {getPositionIcon(team.position)}
@@ -253,29 +227,22 @@ const Leagues = () => {
                             <TableCell className="text-center">{team.goals_for}</TableCell>
                             <TableCell className="text-center">{team.goals_against}</TableCell>
                             <TableCell className="text-center">
-                              <span className={
-                                team.goal_difference > 0 ? "text-green-600 font-medium" : 
-                                team.goal_difference < 0 ? "text-red-600 font-medium" : ""
-                              }>
+                              <span className={team.goal_difference > 0 ? "text-green-600 font-medium" : team.goal_difference < 0 ? "text-red-600 font-medium" : ""}>
                                 {team.goal_difference > 0 ? '+' : ''}{team.goal_difference}
                               </span>
                             </TableCell>
                             <TableCell className="text-center font-bold text-primary">{team.points}</TableCell>
-                          </TableRow>
-                        ))}
+                          </TableRow>)}
                       </TableBody>
                     </Table>
                   </CardContent>
-                </Card>
-              )}
+                </Card>}
             </TabsContent>
 
             {/* Recent Results */}
             <TabsContent value="recent" className="space-y-4">
-              {selectedLeague && groupedMatches[selectedLeague] ? (
-                <div className="grid gap-4">
-                  {groupedMatches[selectedLeague].slice(0, 10).map((match) => (
-                    <Card key={match.id} className="bg-gradient-card">
+              {selectedLeague && groupedMatches[selectedLeague] ? <div className="grid gap-4">
+                  {groupedMatches[selectedLeague].slice(0, 10).map(match => <Card key={match.id} className="bg-gradient-card">
                       <CardContent className="pt-4">
                         <div className="flex items-center justify-between">
                           <div className="flex-1 text-center">
@@ -292,44 +259,34 @@ const Leagues = () => {
                         </div>
                         <div className="mt-2 text-center text-sm text-muted-foreground">
                           {new Date(match.start_time).toLocaleDateString('en-US', {
-                            weekday: 'short',
-                            month: 'short',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
+                    weekday: 'short',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
                         </div>
                       </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8">
+                    </Card>)}
+                </div> : <div className="text-center py-8">
                   <Calendar className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                   <p className="text-muted-foreground">No recent matches for this league</p>
-                </div>
-              )}
+                </div>}
             </TabsContent>
 
             {/* Statistics */}
             <TabsContent value="stats" className="space-y-6">
-              {selectedLeague && groupedTables[selectedLeague] && (
-                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {selectedLeague && groupedTables[selectedLeague] && <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
                   <Card className="bg-gradient-card">
                     <CardHeader className="pb-3">
                       <CardTitle className="text-sm text-muted-foreground">Top Scorer</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-2">
-                        {groupedTables[selectedLeague]
-                          .sort((a, b) => b.goals_for - a.goals_for)
-                          .slice(0, 3)
-                          .map((team, index) => (
-                            <div key={team.id} className="flex justify-between">
+                        {groupedTables[selectedLeague].sort((a, b) => b.goals_for - a.goals_for).slice(0, 3).map((team, index) => <div key={team.id} className="flex justify-between">
                               <span className="text-sm">{team.team_name}</span>
                               <span className="font-bold">{team.goals_for}</span>
-                            </div>
-                          ))}
+                            </div>)}
                       </div>
                     </CardContent>
                   </Card>
@@ -340,15 +297,10 @@ const Leagues = () => {
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-2">
-                        {groupedTables[selectedLeague]
-                          .sort((a, b) => a.goals_against - b.goals_against)
-                          .slice(0, 3)
-                          .map((team, index) => (
-                            <div key={team.id} className="flex justify-between">
+                        {groupedTables[selectedLeague].sort((a, b) => a.goals_against - b.goals_against).slice(0, 3).map((team, index) => <div key={team.id} className="flex justify-between">
                               <span className="text-sm">{team.team_name}</span>
                               <span className="font-bold">{team.goals_against}</span>
-                            </div>
-                          ))}
+                            </div>)}
                       </div>
                     </CardContent>
                   </Card>
@@ -359,15 +311,10 @@ const Leagues = () => {
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-2">
-                        {groupedTables[selectedLeague]
-                          .sort((a, b) => b.wins - a.wins)
-                          .slice(0, 3)
-                          .map((team, index) => (
-                            <div key={team.id} className="flex justify-between">
+                        {groupedTables[selectedLeague].sort((a, b) => b.wins - a.wins).slice(0, 3).map((team, index) => <div key={team.id} className="flex justify-between">
                               <span className="text-sm">{team.team_name}</span>
                               <span className="font-bold">{team.wins}</span>
-                            </div>
-                          ))}
+                            </div>)}
                       </div>
                     </CardContent>
                   </Card>
@@ -397,14 +344,10 @@ const Leagues = () => {
                       </div>
                     </CardContent>
                   </Card>
-                </div>
-              )}
+                </div>}
             </TabsContent>
-          </Tabs>
-        )}
+          </Tabs>}
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Leagues;
