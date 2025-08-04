@@ -204,7 +204,7 @@ serve(async (req) => {
       for (const league of leagues.slice(0, 3)) { // Limit to first 3 to save API calls
         try {
           console.log(`Fetching standings for ${league.name}...`);
-          const standingsResponse = await fetch(`https://v3.football.api-sports.io/standings?league=${league.id}&season=2024`, {
+          const standingsResponse = await fetch(`https://v3.football.api-sports.io/standings?league=${league.id}&season=2025`, {
             headers: {
               'x-apisports-key': apiKey,
               'x-rapidapi-host': 'v3.football.api-sports.io'
