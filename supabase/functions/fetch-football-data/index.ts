@@ -69,9 +69,9 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const apiKey = Deno.env.get('FOOTBALL_DATA_API_KEY');
+    const apiKey = Deno.env.get('APIFOOTBALL_KEY');
     if (!apiKey) {
-      throw new Error('FOOTBALL_DATA_API_KEY not configured');
+      throw new Error('APIFOOTBALL_KEY not configured');
     }
 
     const { searchParams } = new URL(req.url);
