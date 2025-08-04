@@ -41,13 +41,17 @@ serve(async (req) => {
         })
       });
 
+      console.log('FlashScore response status:', firecrawlResponse.status);
+      
       if (firecrawlResponse.ok) {
         firecrawlData = await firecrawlResponse.json();
-        console.log('FlashScore scraping completed successfully');
+        console.log('FlashScore scraping successful, data structure:', Object.keys(firecrawlData || {}));
       } else {
-        console.log('FlashScore scraping failed, trying CAF official site...');
+        const errorText = await firecrawlResponse.text();
+        console.log('FlashScore scraping failed with status:', firecrawlResponse.status, 'Error:', errorText);
         
         // Fallback to CAF official site
+        console.log('Trying CAF official site...');
         const cafResponse = await fetch('https://api.firecrawl.dev/v1/scrape', {
           method: 'POST',
           headers: {
@@ -65,9 +69,14 @@ serve(async (req) => {
           })
         });
 
+        console.log('CAF response status:', cafResponse.status);
+        
         if (cafResponse.ok) {
           firecrawlData = await cafResponse.json();
-          console.log('CAF official site scraping completed');
+          console.log('CAF official site scraping completed, data structure:', Object.keys(firecrawlData || {}));
+        } else {
+          const cafErrorText = await cafResponse.text();
+          console.log('CAF scraping also failed with status:', cafResponse.status, 'Error:', cafErrorText);
         }
       }
     } catch (error) {
