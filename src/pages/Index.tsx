@@ -102,7 +102,7 @@ const Index = () => {
               {/* Right Side Content - Desktop Only */}
               <div className="hidden lg:block lg:col-span-5 space-y-6">
                 {/* CAF CHAN Call-to-Action Banner */}
-                <div className="bg-gradient-to-r from-primary/20 to-primary/10 border border-primary/30 rounded-xl p-5">
+                <div className="bg-gradient-to-r from-primary/20 to-primary/10 border border-primary/30 rounded-xl p-5 my-[125px] mx-[9px] px-[20px] py-[18px]">
                   <div className="flex items-center gap-3 mb-3">
                     <Trophy className="w-6 h-6 text-primary" />
                     <span className="text-primary font-semibold text-lg">🏆 CAF CHAN</span>
@@ -116,48 +116,10 @@ const Index = () => {
                 </div>
 
                 {/* Live Stats Grid */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-background/60 backdrop-blur-sm rounded-xl p-4 text-center border border-border/50 hover:border-primary/30 transition-colors">
-                    <div className="flex items-center justify-center gap-2 mb-2">
-                      <div className="w-2 h-2 bg-match-live rounded-full animate-pulse"></div>
-                      <span className="text-2xl font-bold text-foreground">3</span>
-                    </div>
-                    <div className="text-xs text-muted-foreground">Live Now</div>
-                  </div>
-                  <div className="bg-background/60 backdrop-blur-sm rounded-xl p-4 text-center border border-border/50 hover:border-primary/30 transition-colors">
-                    <div className="flex items-center justify-center gap-2 mb-2">
-                      <Users className="w-4 h-4 text-primary" />
-                      <span className="text-2xl font-bold text-foreground">2.4k</span>
-                    </div>
-                    <div className="text-xs text-muted-foreground">Active Fans</div>
-                  </div>
-                  <div className="bg-background/60 backdrop-blur-sm rounded-xl p-4 text-center border border-border/50 hover:border-primary/30 transition-colors">
-                    <div className="flex items-center justify-center gap-2 mb-2">
-                      <TrendingUp className="w-4 h-4 text-primary" />
-                      <span className="text-2xl font-bold text-foreground">156</span>
-                    </div>
-                    <div className="text-xs text-muted-foreground">Predictions</div>
-                  </div>
-                  <div className="bg-background/60 backdrop-blur-sm rounded-xl p-4 text-center border border-border/50 hover:border-primary/30 transition-colors">
-                    <div className="flex items-center justify-center gap-2 mb-2">
-                      <Activity className="w-4 h-4 text-primary" />
-                      <span className="text-2xl font-bold text-foreground">12</span>
-                    </div>
-                    <div className="text-xs text-muted-foreground">Today's Games</div>
-                  </div>
-                </div>
+                
 
                 {/* Featured Match Preview */}
-                <div className="bg-background/60 backdrop-blur-sm rounded-xl p-5 border border-border/50 hover:border-primary/30 transition-colors">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Badge className="bg-match-live text-white animate-pulse text-xs">LIVE</Badge>
-                    <span className="text-sm text-muted-foreground">Premier League</span>
-                  </div>
-                  <div className="text-center">
-                    <div className="font-semibold text-foreground mb-2">Arsenal vs Chelsea</div>
-                    <div className="text-sm text-muted-foreground">15:30 • Second Half</div>
-                  </div>
-                </div>
+                
               </div>
             </div>
           </div>
