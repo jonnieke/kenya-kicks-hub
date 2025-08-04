@@ -6,19 +6,20 @@ import { Link } from "react-router-dom";
 import { AffiliateRedirect } from "@/components/AffiliateRedirect";
 import { BannerAd, SidebarAd } from "@/components/AdSense";
 import heroImage from "@/assets/hero-footballer-scoring.jpg";
-const featuredMatches = [{
-  homeTeam: "Arsenal",
-  awayTeam: "Chelsea",
-  time: "15:30",
-  status: "LIVE",
-  league: "Premier League"
-}, {
-  homeTeam: "Gor Mahia",
-  awayTeam: "AFC Leopards",
-  time: "16:00",
-  status: "UPCOMING",
-  league: "FKF Premier League"
-}];
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+type Match = {
+  id: string;
+  home_team: string;
+  away_team: string;
+  league: string;
+  status: string;
+  start_time: string;
+  match_date: string;
+  home_score?: number;
+  away_score?: number;
+  minute?: string;
+};
 const quickStats = [{
   label: "Matches Today",
   value: "12",
@@ -37,6 +38,44 @@ const quickStats = [{
   icon: TrendingUp
 }];
 const Index = () => {
+  const [featuredMatches, setFeaturedMatches] = useState<Match[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCAFMatches = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('matches')
+          .select('*')
+          .ilike('league', '%CAF%')
+          .order('match_date', { ascending: true })
+          .limit(3);
+
+        if (error) {
+          console.error('Error fetching CAF matches:', error);
+          return;
+        }
+
+        if (data) {
+          setFeaturedMatches(data);
+        }
+      } catch (error) {
+        console.error('Error fetching matches:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCAFMatches();
+  }, []);
+
+  const formatMatchTime = (startTime: string, matchDate: string) => {
+    if (startTime) {
+      return new Date(startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+    return new Date(matchDate).toLocaleDateString();
+  };
+
   return <div className="min-h-screen bg-background p-6">
       <AffiliateRedirect />
       <div className="max-w-6xl mx-auto space-y-8">
@@ -150,21 +189,34 @@ const Index = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {featuredMatches.map((match, index) => <div key={index} className="flex items-center justify-between p-4 bg-background/50 rounded-lg">
+            {loading ? (
+              <div className="text-center py-4 text-muted-foreground">Loading CAF CHAN matches...</div>
+            ) : featuredMatches.length > 0 ? (
+              featuredMatches.map((match, index) => <div key={match.id || index} className="flex items-center justify-between p-4 bg-background/50 rounded-lg">
                 <div className="flex items-center gap-4">
-                  <Badge variant={match.status === "LIVE" ? "destructive" : "secondary"} className={match.status === "LIVE" ? "bg-match-live text-white animate-pulse" : "bg-match-upcoming text-background"}>
-                    {match.status}
+                  <Badge variant={match.status === "live" ? "destructive" : "secondary"} className={match.status === "live" ? "bg-match-live text-white animate-pulse" : "bg-match-upcoming text-background"}>
+                    {match.status?.toUpperCase() || "UPCOMING"}
                   </Badge>
                   <div>
-                    <div className="font-medium">{match.homeTeam} vs {match.awayTeam}</div>
+                    <div className="font-medium">
+                      {match.home_team} vs {match.away_team}
+                      {match.status === "live" && match.home_score !== undefined && match.away_score !== undefined && (
+                        <span className="ml-2 text-primary font-bold">
+                          {match.home_score}-{match.away_score}
+                        </span>
+                      )}
+                    </div>
                     <div className="text-sm text-muted-foreground">{match.league}</div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Calendar className="w-4 h-4" />
-                  <span>{match.time}</span>
+                  <span>{formatMatchTime(match.start_time, match.match_date)}</span>
                 </div>
-              </div>)}
+              </div>)
+            ) : (
+              <div className="text-center py-4 text-muted-foreground">No CAF CHAN matches available</div>
+            )}
             <Button asChild variant="outline" className="w-full">
               <Link to="/live-scores">View All Matches</Link>
             </Button>
