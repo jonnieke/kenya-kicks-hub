@@ -63,7 +63,7 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
 				football: {
-					green: 'hsl(var(--football-green))',
+					blue: 'hsl(var(--football-blue))',
 					gold: 'hsl(var(--football-gold))'
 				},
 				match: {
