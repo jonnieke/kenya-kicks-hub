@@ -14,6 +14,7 @@ import Chat from "./pages/Chat";
 import Community from "./pages/Community";
 import Leagues from "./pages/Leagues";
 import NotFound from "./pages/NotFound";
+import Auth from "./pages/Auth";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +40,7 @@ const App = () => (
                 <Route path="/chat" element={<Chat />} />
                 <Route path="/community" element={<Community />} />
                 <Route path="/leagues" element={<Leagues />} />
+                <Route path="/auth" element={<Auth />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
