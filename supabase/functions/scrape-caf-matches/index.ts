@@ -31,7 +31,7 @@ serve(async (req) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          url: 'https://www.flashscore.com/football/africa/african-nations-championship/',
+          url: 'https://www.flashscore.co.ke/football/africa/african-nations-championship/',
           formats: ['markdown', 'html'],
           waitFor: 5000,
           extractorOptions: {
