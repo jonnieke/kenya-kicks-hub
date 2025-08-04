@@ -1,6 +1,8 @@
 import { useState } from "react"
-import { Home, Activity, Newspaper, TrendingUp, Brain, MessageCircle, Trophy, Users } from "lucide-react"
+import { Home, Activity, Newspaper, TrendingUp, Brain, MessageCircle, Trophy, Users, LogOut, User } from "lucide-react"
 import { NavLink, useLocation } from "react-router-dom"
+import { useAuth } from "@/contexts/AuthContext"
+import { Button } from "@/components/ui/button"
 
 import {
   Sidebar,
@@ -31,6 +33,7 @@ export function AppSidebar() {
   const location = useLocation()
   const currentPath = location.pathname
   const isCollapsed = state === "collapsed"
+  const { user, signOut } = useAuth()
 
   const isActive = (path: string) => currentPath === path
   const isExpanded = items.some((i) => isActive(i.url))
@@ -76,6 +79,46 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {/* User Section */}
+        {user && (
+          <div className="mt-auto p-4 border-t border-sidebar-border">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-8 h-8 bg-sidebar-accent rounded-full flex items-center justify-center">
+                <User className="w-4 h-4" />
+              </div>
+              {!isCollapsed && (
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{user.email}</p>
+                  <p className="text-xs text-sidebar-foreground/60">Admin</p>
+                </div>
+              )}
+            </div>
+            {!isCollapsed && (
+              <Button
+                onClick={signOut}
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Sign Out
+              </Button>
+            )}
+          </div>
+        )}
+
+        {/* Auth Link for non-authenticated users */}
+        {!user && (
+          <div className="mt-auto p-4 border-t border-sidebar-border">
+            <Button asChild className="w-full">
+              <NavLink to="/auth">
+                <User className="w-4 h-4 mr-2" />
+                {!isCollapsed ? "Sign In" : ""}
+              </NavLink>
+            </Button>
+          </div>
+        )}
       </SidebarContent>
     </Sidebar>
   )
