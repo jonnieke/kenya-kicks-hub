@@ -14,39 +14,102 @@ export type Database = {
   }
   public: {
     Tables: {
+      league_tables: {
+        Row: {
+          created_at: string
+          draws: number | null
+          goal_difference: number | null
+          goals_against: number | null
+          goals_for: number | null
+          id: string
+          league: string
+          losses: number | null
+          matches_played: number | null
+          points: number | null
+          position: number
+          team_name: string
+          updated_at: string
+          wins: number | null
+        }
+        Insert: {
+          created_at?: string
+          draws?: number | null
+          goal_difference?: number | null
+          goals_against?: number | null
+          goals_for?: number | null
+          id?: string
+          league: string
+          losses?: number | null
+          matches_played?: number | null
+          points?: number | null
+          position: number
+          team_name: string
+          updated_at?: string
+          wins?: number | null
+        }
+        Update: {
+          created_at?: string
+          draws?: number | null
+          goal_difference?: number | null
+          goals_against?: number | null
+          goals_for?: number | null
+          id?: string
+          league?: string
+          losses?: number | null
+          matches_played?: number | null
+          points?: number | null
+          position?: number
+          team_name?: string
+          updated_at?: string
+          wins?: number | null
+        }
+        Relationships: []
+      }
       matches: {
         Row: {
           api_match_id: string | null
+          away_score: number | null
           away_team: string
           created_at: string
+          home_score: number | null
           home_team: string
           id: string
           league: string
           match_date: string
+          minute: string | null
+          start_time: string | null
           status: string | null
           updated_at: string
           venue: string | null
         }
         Insert: {
           api_match_id?: string | null
+          away_score?: number | null
           away_team: string
           created_at?: string
+          home_score?: number | null
           home_team: string
           id?: string
           league: string
           match_date: string
+          minute?: string | null
+          start_time?: string | null
           status?: string | null
           updated_at?: string
           venue?: string | null
         }
         Update: {
           api_match_id?: string | null
+          away_score?: number | null
           away_team?: string
           created_at?: string
+          home_score?: number | null
           home_team?: string
           id?: string
           league?: string
           match_date?: string
+          minute?: string | null
+          start_time?: string | null
           status?: string | null
           updated_at?: string
           venue?: string | null
