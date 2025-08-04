@@ -31,6 +31,7 @@ interface Match {
   league: string;
   start_time: string;
   venue?: string | null;
+  api_match_id?: string | null;
 }
 const Leagues = () => {
   const [selectedLeague, setSelectedLeague] = useState<string | null>(null);
@@ -74,7 +75,7 @@ const Leagues = () => {
     }
   });
 
-  // Fetch CHAN specific matches
+  // Fetch CHAN specific matches - exclude mock/placeholder data
   const {
     data: chanMatches = [],
     isLoading: chanMatchesLoading
@@ -89,7 +90,16 @@ const Leagues = () => {
         .order('start_time', { ascending: false })
         .limit(20);
       if (error) throw error;
-      return data as Match[];
+      
+      // Filter out mock/placeholder data
+      const realMatches = (data as Match[]).filter(match => 
+        match.api_match_id && 
+        !match.api_match_id.startsWith('caf_chan_') &&
+        match.venue && // Real matches have venues
+        !(match.home_team?.includes("A'") || match.away_team?.includes("A'")) // Exclude placeholder team names
+      );
+      
+      return realMatches;
     }
   });
 
@@ -358,7 +368,7 @@ const Leagues = () => {
                             </div>
                           </div>
                           <div className="flex items-center justify-between text-xs">
-                            <span className="text-muted-foreground">{match.venue || 'TBD'}</span>
+                            <span className="text-muted-foreground">{match.venue || 'Venue pending'}</span>
                             <span className="bg-red-500 text-white px-2 py-1 rounded-full font-medium animate-pulse">
                               {match.status}
                             </span>
@@ -400,7 +410,7 @@ const Leagues = () => {
                               weekday: 'short',
                               month: 'short',
                               day: 'numeric'
-                             })} • {match.venue || 'TBD'}
+                             })} • {match.venue || 'Venue pending'}
                           </div>
                         </div>
                       ))}
@@ -444,7 +454,7 @@ const Leagues = () => {
                               day: 'numeric',
                               hour: '2-digit',
                               minute: '2-digit'
-                             })} • {match.venue || 'TBD'}
+                              })} • {match.venue || 'Venue pending'}
                           </div>
                         </div>
                       ))}
@@ -572,7 +582,7 @@ const Leagues = () => {
                             day: 'numeric',
                             hour: '2-digit',
                             minute: '2-digit'
-                          })} • {match.venue || 'TBD'}
+                          })} • {match.venue || 'Venue pending'}
                         </div>
                       </CardContent>
                     </Card>
