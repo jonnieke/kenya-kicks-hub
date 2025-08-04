@@ -19,32 +19,60 @@ serve(async (req) => {
       throw new Error('Firecrawl API key not configured');
     }
 
-    console.log('Scraping CAF match results from official website...');
+    console.log('Scraping CAF match results from FlashScore...');
 
-    // Use Firecrawl to scrape the CAF results page
-    const firecrawlResponse = await fetch('https://api.firecrawl.dev/v1/scrape', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${firecrawlApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        url: 'https://www.cafonline.com/caf-african-nations-championship/schedule-results/',
-        formats: ['markdown', 'html'],
-        waitFor: 3000,
-        extractorOptions: {
-          mode: 'llm-extraction',
-          extractionPrompt: 'Extract all football match results with team names, scores, dates, and match status. Include both finished matches and upcoming fixtures.'
+    // Try FlashScore first as it's more reliable
+    let firecrawlData = null;
+    try {
+      const firecrawlResponse = await fetch('https://api.firecrawl.dev/v1/scrape', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${firecrawlApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          url: 'https://www.flashscore.com/football/africa/african-nations-championship/',
+          formats: ['markdown', 'html'],
+          waitFor: 5000,
+          extractorOptions: {
+            mode: 'llm-extraction',
+            extractionPrompt: 'Extract all football match results with team names, scores, dates, and match status. Focus on recent matches and current tournament fixtures.'
+          }
+        })
+      });
+
+      if (firecrawlResponse.ok) {
+        firecrawlData = await firecrawlResponse.json();
+        console.log('FlashScore scraping completed successfully');
+      } else {
+        console.log('FlashScore scraping failed, trying CAF official site...');
+        
+        // Fallback to CAF official site
+        const cafResponse = await fetch('https://api.firecrawl.dev/v1/scrape', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${firecrawlApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            url: 'https://www.cafonline.com/caf-african-nations-championship/',
+            formats: ['markdown', 'html'],
+            waitFor: 3000,
+            extractorOptions: {
+              mode: 'llm-extraction',
+              extractionPrompt: 'Extract all football match results with team names, scores, dates, and match status.'
+            }
+          })
+        });
+
+        if (cafResponse.ok) {
+          firecrawlData = await cafResponse.json();
+          console.log('CAF official site scraping completed');
         }
-      })
-    });
-
-    if (!firecrawlResponse.ok) {
-      throw new Error(`Firecrawl API error: ${firecrawlResponse.status}`);
+      }
+    } catch (error) {
+      console.error('Error during scraping:', error);
     }
-
-    const firecrawlData = await firecrawlResponse.json();
-    console.log('Firecrawl scraping completed');
 
     // Parse the scraped content to extract match data
     let matches = [];
