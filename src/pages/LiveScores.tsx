@@ -118,10 +118,10 @@ const LiveScores = () => {
     };
   }, [refetchMatches, refetchTables]);
 
-  // Filter matches by status
-  const liveMatches = matches.filter(match => match.status === 'LIVE');
-  const upcomingMatches = matches.filter(match => match.status === 'UPCOMING' || match.status === 'TIMED');
-  const recentResults = matches.filter(match => match.status === 'FT' || match.status === 'FINISHED');
+  // Filter matches by status with better categorization
+  const liveMatches = matches.filter(match => ['LIVE', '1H', '2H', 'HT'].includes(match.status));
+  const upcomingMatches = matches.filter(match => ['UPCOMING', 'TIMED', 'NS'].includes(match.status));
+  const recentResults = matches.filter(match => ['FT', 'FINISHED'].includes(match.status));
 
   // Group league tables by league
   const groupedTables = leagueTables.reduce((acc, team) => {
@@ -164,49 +164,101 @@ const LiveScores = () => {
   }: {
     match: Match;
     showAnimation?: boolean;
-  }) => <Card key={match.id} className={`bg-gradient-card border-border hover:border-primary/50 transition-all cursor-pointer ${showAnimation ? 'animate-pulse' : ''}`} onClick={() => handleMatchClick(match)}>
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-sm text-muted-foreground">{match.league}</CardTitle>
-          <div className="flex items-center gap-2">
-            {match.venue && <span className="text-xs text-muted-foreground">{match.venue}</span>}
-            <Badge variant={match.status === "LIVE" ? "destructive" : match.status === "FT" || match.status === "FINISHED" ? "secondary" : "default"} className={match.status === "LIVE" ? "bg-match-live text-white animate-pulse" : match.status === "FT" || match.status === "FINISHED" ? "bg-match-finished text-white" : "bg-match-upcoming text-background"}>
-              {match.status === "LIVE" ? `LIVE ${match.minute || ''}` : match.status}
-            </Badge>
+  }) => {
+    const isLive = ['LIVE', '1H', '2H', 'HT'].includes(match.status);
+    const isFinished = ['FT', 'FINISHED'].includes(match.status);
+    
+    return (
+      <Card 
+        key={match.id} 
+        className={`transition-all cursor-pointer duration-300 hover:shadow-lg ${
+          isLive 
+            ? 'bg-gradient-to-r from-red-500/10 to-orange-500/10 border-red-500/30 shadow-md' 
+            : 'bg-gradient-card border-border hover:border-primary/50'
+        } ${showAnimation ? 'animate-pulse' : ''}`} 
+        onClick={() => handleMatchClick(match)}
+      >
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
+              <Trophy className="w-3 h-3" />
+              {match.league}
+            </CardTitle>
+            <div className="flex items-center gap-2">
+              {match.venue && <span className="text-xs text-muted-foreground">📍 {match.venue}</span>}
+              <Badge 
+                variant={isLive ? "destructive" : isFinished ? "secondary" : "default"} 
+                className={`${
+                  isLive 
+                    ? "bg-red-500 text-white animate-pulse" 
+                    : isFinished 
+                      ? "bg-gray-500 text-white" 
+                      : "bg-blue-500 text-white"
+                }`}
+              >
+                {isLive ? (
+                  <div className="flex items-center gap-1">
+                    <span className="w-2 h-2 bg-white rounded-full animate-ping"></span>
+                    {match.status === 'LIVE' ? `LIVE ${match.minute || ''}` : match.status}
+                  </div>
+                ) : match.status}
+              </Badge>
+            </div>
           </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="flex items-center justify-between">
-          <div className="flex-1 text-center">
-            <h3 className="font-semibold text-lg text-foreground">{match.home_team}</h3>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <div className="flex-1 text-center">
+              <h3 className={`font-semibold text-lg ${isLive ? 'text-red-700 dark:text-red-400' : 'text-foreground'}`}>
+                {match.home_team}
+              </h3>
+            </div>
+            <div className="flex items-center gap-4 px-8">
+              {!['UPCOMING', 'TIMED', 'NS'].includes(match.status) ? (
+                <>
+                  <span className={`text-3xl font-bold ${
+                    isLive ? 'text-red-600 dark:text-red-400' : 'text-foreground'
+                  }`}>
+                    {match.home_score ?? 0}
+                  </span>
+                  <span className={`text-2xl ${isLive ? 'text-red-500' : 'text-muted-foreground'}`}>
+                    -
+                  </span>
+                  <span className={`text-3xl font-bold ${
+                    isLive ? 'text-red-600 dark:text-red-400' : 'text-foreground'
+                  }`}>
+                    {match.away_score ?? 0}
+                  </span>
+                </>
+              ) : (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Timer className="w-4 h-4" />
+                  <span>
+                    {new Date(match.start_time).toLocaleTimeString('en-US', {
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </span>
+                </div>
+              )}
+            </div>
+            <div className="flex-1 text-center">
+              <h3 className={`font-semibold text-lg ${isLive ? 'text-red-700 dark:text-red-400' : 'text-foreground'}`}>
+                {match.away_team}
+              </h3>
+            </div>
           </div>
-          <div className="flex items-center gap-4 px-8">
-            {match.status !== "UPCOMING" && match.status !== "TIMED" ? <>
-                <span className="text-3xl font-bold text-foreground">{match.home_score ?? 0}</span>
-                <span className="text-2xl text-muted-foreground">-</span>
-                <span className="text-3xl font-bold text-foreground">{match.away_score ?? 0}</span>
-              </> : <div className="flex items-center gap-2 text-muted-foreground">
-                <Timer className="w-4 h-4" />
-                <span>{new Date(match.start_time).toLocaleTimeString('en-US', {
-                hour: '2-digit',
-                minute: '2-digit'
-              })}</span>
-              </div>}
+          <div className="mt-2 text-center text-xs text-muted-foreground">
+            {new Date(match.start_time).toLocaleDateString('en-US', {
+              weekday: 'short',
+              month: 'short',
+              day: 'numeric'
+            })}
           </div>
-          <div className="flex-1 text-center">
-            <h3 className="font-semibold text-lg text-foreground">{match.away_team}</h3>
-          </div>
-        </div>
-        <div className="mt-2 text-center text-xs text-muted-foreground">
-          {new Date(match.start_time).toLocaleDateString('en-US', {
-          weekday: 'short',
-          month: 'short',
-          day: 'numeric'
-        })}
-        </div>
-      </CardContent>
-    </Card>;
+        </CardContent>
+      </Card>
+    );
+  };
   return <div className="min-h-screen bg-background p-6">
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
