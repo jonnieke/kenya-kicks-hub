@@ -51,7 +51,7 @@ const Index = () => {
           .select('*')
           .or(`status.eq.live,status.eq.upcoming,match_date.gte.${today}`)
           .order('match_date', { ascending: true })
-          .limit(10);
+          .limit(5);
 
         if (error) {
           console.error('Error fetching current matches:', error);
