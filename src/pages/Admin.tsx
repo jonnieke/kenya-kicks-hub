@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AdminMatchManager } from "@/components/AdminMatchManager";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Shield, Users, Activity, TrendingUp } from "lucide-react";
+import { Shield, Users, Activity, TrendingUp, Newspaper } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface UserRole {
@@ -192,6 +192,21 @@ const Admin = () => {
 
         {/* Match Manager */}
         <AdminMatchManager />
+        
+        {/* News Management Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-xl font-bold">News Management</CardTitle>
+            <p className="text-muted-foreground">Manage news articles, comments, and engagement</p>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center py-8 text-muted-foreground">
+              <Newspaper className="w-12 h-12 mx-auto mb-4 opacity-50" />
+              <p>News management functionality will be available after database migration is complete.</p>
+              <p className="text-sm mt-2">Features include: Create articles, manage comments, moderate content</p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
