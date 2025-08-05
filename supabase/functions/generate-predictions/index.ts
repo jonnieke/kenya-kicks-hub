@@ -48,18 +48,30 @@ serve(async (req) => {
     });
 
     console.log('API-FOOTBALL response status:', footballResponse.status);
+    const responseText = await footballResponse.text();
+    console.log('API-FOOTBALL raw response:', responseText.substring(0, 500));
 
     if (!footballResponse.ok) {
+      console.error('API-FOOTBALL error:', responseText);
       throw new Error(`Failed to fetch football data: ${footballResponse.status}`);
     }
 
-    const footballData = await footballResponse.json();
+    let footballData;
+    try {
+      footballData = JSON.parse(responseText);
+    } catch (e) {
+      console.error('Failed to parse JSON:', e);
+      throw new Error('Invalid JSON response from API-FOOTBALL');
+    }
+    
     console.log('Football data received:', { 
       results: footballData.results || 0,
-      fixtures: footballData.response?.length || 0 
+      fixtures: footballData.response?.length || 0,
+      errors: footballData.errors || 'none'
     });
     
     const upcomingMatches = footballData.response?.slice(0, 5) || [];
+    console.log('Upcoming matches count:', upcomingMatches.length);
 
     // Generate AI predictions for each match
     const predictions = [];
