@@ -38,9 +38,10 @@ serve(async (req) => {
       });
     }
 
-    // Fetch upcoming matches from API-FOOTBALL
+    // Fetch upcoming matches from API-FOOTBALL (using today's fixtures instead of 'next' parameter)
     console.log('Fetching matches from API-FOOTBALL...');
-    const footballResponse = await fetch('https://v3.football.api-sports.io/fixtures?next=10', {
+    const today = new Date().toISOString().split('T')[0];
+    const footballResponse = await fetch(`https://v3.football.api-sports.io/fixtures?date=${today}`, {
       headers: {
         'X-RapidAPI-Key': footballApiKey,
         'X-RapidAPI-Host': 'v3.football.api-sports.io'
