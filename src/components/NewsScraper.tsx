@@ -69,7 +69,7 @@ export const NewsScraper = () => {
           className="bg-gradient-primary gap-2"
         >
           <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-          {loading ? 'Scraping...' : 'Scrape News'}
+          {loading ? 'Refreshing...' : 'Refresh News'}
         </Button>
       </div>
 
@@ -100,10 +100,10 @@ export const NewsScraper = () => {
             <div>
               <h3 className="text-lg font-semibold mb-2">No news articles yet</h3>
               <p className="text-muted-foreground mb-4">
-                Click "Scrape News" to fetch the latest CAF and CHAN updates
+                Click "Refresh News" to fetch the latest CAF and CHAN updates
               </p>
               <Button onClick={scrapeNews} className="bg-gradient-primary">
-                Start Scraping
+                Start Refreshing
               </Button>
             </div>
           </CardContent>

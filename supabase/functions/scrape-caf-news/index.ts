@@ -41,7 +41,7 @@ serve(async (req) => {
 
     For each article, provide:
     - title: Compelling headline (max 80 chars)
-    - excerpt: Brief summary (max 150 chars) 
+    - excerpt: Detailed, readable summary (50-100 words) that provides context and makes sense as a complete thought
     - category: One of "CAF", "CHAN", "AFCON", "Transfers", "Club Football"
     - source: Realistic African football media source name
     - timeAgo: Realistic time like "2 hours ago", "1 day ago"
@@ -53,7 +53,7 @@ serve(async (req) => {
     [
       {
         "title": "CHAN 2025: Morocco announces final 23-man squad",
-        "excerpt": "Atlas Lions coach reveals squad selection for upcoming tournament with several new faces included",
+        "excerpt": "Morocco's head coach Walid Regragui has unveiled his final 23-man squad for the upcoming African Nations Championship. The Atlas Lions will rely on a mix of experienced campaigners and promising young talents from the domestic league. Notable inclusions include Raja Casablanca striker Ahmed Hammadi and Wydad defender Youssef Benami. The team will gather for a training camp in Rabat next week before departing for the tournament. Morocco enters as one of the favorites having reached the semi-finals in the previous edition.",
         "category": "CHAN",
         "source": "CAF Online",
         "timeAgo": "3 hours ago",
@@ -109,7 +109,7 @@ serve(async (req) => {
       allNews = [
         {
           title: "CHAN 2025: Preparations intensify across Africa",
-          excerpt: "National teams across the continent step up training ahead of the tournament",
+          excerpt: "National teams across the African continent are stepping up their preparations as the 2025 African Nations Championship draws closer. Training camps have been established in Morocco, Nigeria, and South Africa, with coaches fine-tuning their squads. The tournament, featuring only locally-based players, promises to showcase the best domestic talent from across Africa. Several new faces are expected to emerge as continental stars during the competition.",
           category: "CHAN",
           source: "African Football News",
           timeAgo: "2 hours ago",
@@ -117,7 +117,7 @@ serve(async (req) => {
         },
         {
           title: "CAF Champions League: Quarter-final draw announced",
-          excerpt: "Eight teams learn their fate as the continental competition reaches crucial stage",
+          excerpt: "The Confederation of African Football has revealed the quarter-final matchups for this season's Champions League, setting up some mouth-watering encounters. North African powerhouses will face stern tests from West and East African representatives. The draw has produced several intriguing storylines, including a potential all-Egyptian semi-final if both Al Ahly and Zamalek progress. Matches are scheduled to begin next month with home and away legs.",
           category: "CAF",
           source: "CAF Media",
           timeAgo: "5 hours ago", 
@@ -125,7 +125,7 @@ serve(async (req) => {
         },
         {
           title: "AFCON 2025: Qualification scenarios taking shape",
-          excerpt: "Several nations edge closer to securing spots for next year's tournament",
+          excerpt: "With just a few matchdays remaining in the Africa Cup of Nations qualifiers, the picture is becoming clearer regarding which nations will secure their places at next year's tournament. Several traditional powerhouses are still fighting for qualification, while some surprise packages have already booked their spots. The final round of matches promises dramatic conclusions to several group campaigns.",
           category: "AFCON",
           source: "Goal Africa",
           timeAgo: "1 day ago",
