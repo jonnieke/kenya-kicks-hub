@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminMatchManager } from "@/components/AdminMatchManager";
+import AdminNewsManager from "@/components/AdminNewsManager";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Shield, Users, Activity, TrendingUp, Newspaper } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -18,7 +20,9 @@ const Admin = () => {
     totalMatches: 0,
     liveMatches: 0,
     totalUsers: 0,
-    activeAffiliates: 0
+    activeAffiliates: 0,
+    totalArticles: 0,
+    publishedArticles: 0
   });
 
   useEffect(() => {
@@ -89,11 +93,21 @@ const Admin = () => {
         .select('*', { count: 'exact', head: true })
         .eq('status', 'approved');
 
+      // Fetch articles stats
+      const { data: articlesData } = await supabase
+        .from('news_articles')
+        .select('is_published');
+
+      const totalArticles = articlesData?.length || 0;
+      const publishedArticles = articlesData?.filter(article => article.is_published).length || 0;
+
       setStats({
         totalMatches,
         liveMatches,
         totalUsers: usersCount || 0,
-        activeAffiliates: affiliatesCount || 0
+        activeAffiliates: affiliatesCount || 0,
+        totalArticles,
+        publishedArticles
       });
     } catch (error) {
       console.error('Error fetching stats:', error);
@@ -146,7 +160,7 @@ const Admin = () => {
         </div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           <Card>
             <CardContent className="p-4 text-center">
               <Activity className="w-6 h-6 text-primary mx-auto mb-2" />
@@ -180,6 +194,24 @@ const Admin = () => {
               <div className="text-sm text-muted-foreground">Active Affiliates</div>
             </CardContent>
           </Card>
+
+          <Card>
+            <CardContent className="p-4 text-center">
+              <Newspaper className="w-6 h-6 text-primary mx-auto mb-2" />
+              <div className="text-2xl font-bold">{stats.totalArticles}</div>
+              <div className="text-sm text-muted-foreground">Total Articles</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4 text-center">
+              <div className="w-6 h-6 mx-auto mb-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full mx-auto"></div>
+              </div>
+              <div className="text-2xl font-bold">{stats.publishedArticles}</div>
+              <div className="text-sm text-muted-foreground">Published</div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Admin Status Badge */}
@@ -190,23 +222,22 @@ const Admin = () => {
           </Badge>
         </div>
 
-        {/* Match Manager */}
-        <AdminMatchManager />
+        {/* Main Content */}
+        <Tabs defaultValue="matches" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="matches">Match Management</TabsTrigger>
+            <TabsTrigger value="news">News Management</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="matches" className="mt-6">
+            <AdminMatchManager />
+          </TabsContent>
+          
+          <TabsContent value="news" className="mt-6">
+            <AdminNewsManager />
+          </TabsContent>
+        </Tabs>
         
-        {/* News Management Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-xl font-bold">News Management</CardTitle>
-            <p className="text-muted-foreground">Manage news articles, comments, and engagement</p>
-          </CardHeader>
-          <CardContent>
-            <div className="text-center py-8 text-muted-foreground">
-              <Newspaper className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>News management functionality will be available after database migration is complete.</p>
-              <p className="text-sm mt-2">Features include: Create articles, manage comments, moderate content</p>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );

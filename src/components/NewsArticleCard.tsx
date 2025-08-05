@@ -1,240 +1,179 @@
-import { useState } from "react"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Textarea } from "@/components/ui/textarea"
-import { Heart, MessageCircle, Clock, User, Send } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Heart, MessageCircle, Calendar, User, Eye } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface NewsArticle {
-  id: string
-  title: string
-  content: string
-  excerpt: string
-  image_url: string | null
-  category: string
-  created_at: string
-  like_count: number
-  comment_count: number
-  user_has_liked?: boolean
-}
-
-interface Comment {
-  id: string
-  content: string
-  created_at: string
-  user_id: string
+  id: string;
+  title: string;
+  content: string;
+  excerpt: string | null;
+  image_url: string | null;
+  published_at: string | null;
+  view_count: number;
+  like_count: number;
+  comment_count: number;
+  category: string;
+  tags: string[] | null;
+  created_at: string;
   profiles?: {
-    full_name: string | null
-  }
+    full_name: string | null;
+  };
 }
 
 interface NewsArticleCardProps {
-  article: NewsArticle
-  showFullContent?: boolean
-  onToggleContent?: () => void
+  article: NewsArticle;
+  onLike: (articleId: string) => void;
+  onComment: (articleId: string) => void;
+  userLiked: boolean;
 }
 
-export const NewsArticleCard = ({ article, showFullContent = false, onToggleContent }: NewsArticleCardProps) => {
-  const [isLiked, setIsLiked] = useState(article.user_has_liked || false)
-  const [likeCount, setLikeCount] = useState(article.like_count)
-  const [showComments, setShowComments] = useState(false)
-  const [comments, setComments] = useState<Comment[]>([])
-  const [newComment, setNewComment] = useState("")
-  const [loadingComments, setLoadingComments] = useState(false)
-  const { toast } = useToast()
+const NewsArticleCard = ({ article, onLike, onComment, userLiked }: NewsArticleCardProps) => {
+  const { toast } = useToast();
+  const [isExpanded, setIsExpanded] = useState(false);
 
-  const handleLike = async () => {
-    // Placeholder for like functionality
-    setIsLiked(!isLiked)
-    setLikeCount(prev => isLiked ? prev - 1 : prev + 1)
-    toast({
-      title: isLiked ? "Removed like" : "Liked!",
-      description: isLiked ? "You unliked this article" : "You liked this article"
-    })
-  }
-
-  const loadComments = async () => {
-    if (showComments) {
-      setShowComments(false)
-      return
+  const handleViewIncrement = async () => {
+    try {
+      await supabase
+        .from('news_articles')
+        .update({ view_count: article.view_count + 1 })
+        .eq('id', article.id);
+    } catch (error) {
+      console.error('Error incrementing view count:', error);
     }
-    
-    setLoadingComments(true)
-    // Placeholder for comment loading
-    setTimeout(() => {
-      setComments([
-        {
-          id: "1",
-          content: "Great article! Very informative.",
-          created_at: new Date().toISOString(),
-          user_id: "user1",
-          profiles: { full_name: "John Doe" }
-        },
-        {
-          id: "2", 
-          content: "Thanks for sharing this news.",
-          created_at: new Date().toISOString(),
-          user_id: "user2",
-          profiles: { full_name: "Jane Smith" }
-        }
-      ])
-      setLoadingComments(false)
-      setShowComments(true)
-    }, 500)
-  }
+  };
 
-  const handleSubmitComment = async () => {
-    if (!newComment.trim()) return
-    
-    // Placeholder for comment submission
-    const comment: Comment = {
-      id: Date.now().toString(),
-      content: newComment,
-      created_at: new Date().toISOString(),
-      user_id: "current_user",
-      profiles: { full_name: "Current User" }
+  const toggleExpanded = () => {
+    if (!isExpanded) {
+      handleViewIncrement();
     }
-    
-    setComments(prev => [comment, ...prev])
-    setNewComment("")
-    toast({
-      title: "Comment posted",
-      description: "Your comment has been added"
-    })
-  }
+    setIsExpanded(!isExpanded);
+  };
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    const now = new Date()
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
-    
-    if (diffInHours < 1) return "Just now"
-    if (diffInHours < 24) return `${diffInHours}h ago`
-    if (diffInHours < 48) return "Yesterday"
-    return date.toLocaleDateString()
-  }
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  };
+
+  const getCategoryColor = (category: string) => {
+    const colors = {
+      'CAF CHAN': 'bg-blue-500/20 text-blue-600 border-blue-500/30',
+      'African Cup': 'bg-green-500/20 text-green-600 border-green-500/30',
+      'Transfer News': 'bg-purple-500/20 text-purple-600 border-purple-500/30',
+      'Match Analysis': 'bg-orange-500/20 text-orange-600 border-orange-500/30',
+      'Player Spotlight': 'bg-red-500/20 text-red-600 border-red-500/30',
+      'General': 'bg-gray-500/20 text-gray-600 border-gray-500/30'
+    };
+    return colors[category as keyof typeof colors] || colors.General;
+  };
 
   return (
-    <Card className="w-full">
-      <CardHeader className="pb-4">
-        <div className="flex items-center justify-between">
-          <Badge variant="secondary" className="text-xs">
+    <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300 border-l-4 border-l-primary">
+      {article.image_url && (
+        <div className="aspect-video overflow-hidden">
+          <img
+            src={article.image_url}
+            alt={article.title}
+            className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+          />
+        </div>
+      )}
+      
+      <CardContent className="p-6">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-4">
+          <Badge className={getCategoryColor(article.category)}>
             {article.category}
           </Badge>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Clock className="w-4 h-4" />
-            {formatDate(article.created_at)}
+          <div className="flex items-center text-sm text-muted-foreground">
+            <Calendar className="w-4 h-4 mr-1" />
+            {formatDate(article.published_at || article.created_at)}
           </div>
         </div>
-        <h2 className="text-xl font-bold leading-tight hover:text-primary cursor-pointer">
+
+        {/* Title */}
+        <h2 className="text-xl font-bold mb-3 line-clamp-2 hover:text-primary cursor-pointer transition-colors">
           {article.title}
         </h2>
-      </CardHeader>
 
-      <CardContent className="space-y-4">
-        {article.image_url && (
-          <div className="w-full h-48 rounded-lg overflow-hidden">
-            <img 
-              src={article.image_url} 
-              alt={article.title}
-              className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-            />
-          </div>
-        )}
-
-        <div className="space-y-3">
-          <p className="text-muted-foreground leading-relaxed">
-            {showFullContent ? article.content : article.excerpt}
-          </p>
-          
-          {!showFullContent && article.content.length > article.excerpt.length && (
-            <Button 
-              variant="link" 
-              className="p-0 h-auto text-primary"
-              onClick={onToggleContent}
-            >
-              Read more →
-            </Button>
+        {/* Excerpt/Content */}
+        <div className="text-muted-foreground mb-4 leading-relaxed">
+          {isExpanded ? (
+            <div className="whitespace-pre-wrap">{article.content}</div>
+          ) : (
+            <p className="line-clamp-3">
+              {article.excerpt || article.content.substring(0, 200) + '...'}
+            </p>
           )}
         </div>
 
-        <div className="flex items-center justify-between pt-4 border-t">
+        {/* Read More Button */}
+        <Button
+          variant="ghost"
+          onClick={toggleExpanded}
+          className="mb-4 p-0 h-auto text-primary hover:text-primary/80"
+        >
+          {isExpanded ? 'Read Less' : 'Read More'}
+        </Button>
+
+        {/* Tags */}
+        {article.tags && article.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1 mb-4">
+            {article.tags.map((tag, index) => (
+              <Badge key={index} variant="outline" className="text-xs">
+                #{tag}
+              </Badge>
+            ))}
+          </div>
+        )}
+
+        {/* Author */}
+        {article.profiles?.full_name && (
+          <div className="flex items-center text-sm text-muted-foreground mb-4">
+            <User className="w-4 h-4 mr-1" />
+            By {article.profiles.full_name}
+          </div>
+        )}
+
+        {/* Actions */}
+        <div className="flex items-center justify-between pt-4 border-t border-border">
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
               size="sm"
-              onClick={handleLike}
-              className={`gap-2 ${isLiked ? 'text-red-500' : ''}`}
+              onClick={() => onLike(article.id)}
+              className={`flex items-center gap-1 ${userLiked ? 'text-red-500' : 'text-muted-foreground'}`}
             >
-              <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
-              {likeCount}
+              <Heart className={`w-4 h-4 ${userLiked ? 'fill-current' : ''}`} />
+              {article.like_count}
             </Button>
             
             <Button
               variant="ghost"
               size="sm"
-              onClick={loadComments}
-              className="gap-2"
+              onClick={() => onComment(article.id)}
+              className="flex items-center gap-1 text-muted-foreground"
             >
               <MessageCircle className="w-4 h-4" />
               {article.comment_count}
             </Button>
+
+            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+              <Eye className="w-4 h-4" />
+              {article.view_count}
+            </div>
           </div>
         </div>
-
-        {showComments && (
-          <div className="space-y-4 pt-4 border-t">
-            <div className="flex gap-3">
-              <Avatar className="w-8 h-8">
-                <AvatarFallback>
-                  <User className="w-4 h-4" />
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 space-y-2">
-                <Textarea
-                  placeholder="Write a comment..."
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  className="min-h-20"
-                />
-                <Button size="sm" onClick={handleSubmitComment} disabled={!newComment.trim()}>
-                  <Send className="w-4 h-4 mr-2" />
-                  Post Comment
-                </Button>
-              </div>
-            </div>
-
-            {loadingComments ? (
-              <div className="text-center py-4 text-muted-foreground">Loading comments...</div>
-            ) : (
-              <div className="space-y-3">
-                {comments.map((comment) => (
-                  <div key={comment.id} className="flex gap-3">
-                    <Avatar className="w-8 h-8">
-                      <AvatarFallback>
-                        {comment.profiles?.full_name?.charAt(0) || 'U'}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <div className="bg-muted rounded-lg p-3">
-                        <div className="font-medium text-sm">
-                          {comment.profiles?.full_name || 'Anonymous'}
-                        </div>
-                        <p className="text-sm mt-1">{comment.content}</p>
-                      </div>
-                      <div className="text-xs text-muted-foreground mt-1">
-                        {formatDate(comment.created_at)}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
       </CardContent>
     </Card>
-  )
-}
+  );
+};
+
+export default NewsArticleCard;
