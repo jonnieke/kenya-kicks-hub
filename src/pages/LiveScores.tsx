@@ -147,7 +147,9 @@ const LiveScores = () => {
   }, [refetchMatches, refetchTables]);
 
   // Filter matches by status with better categorization
-  const liveMatches = matches.filter(match => ['LIVE', '1H', '2H', 'HT'].includes(match.status));
+  const liveMatches = matches
+    .filter(match => ['LIVE', '1H', '2H', 'HT'].includes(match.status))
+    .sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime()); // Latest on top
   const upcomingMatches = matches.filter(match => ['UPCOMING', 'TIMED', 'NS'].includes(match.status));
   const recentResults = matches.filter(match => ['FT', 'FINISHED'].includes(match.status));
 
@@ -448,15 +450,30 @@ const LiveScores = () => {
                   <div className="flex items-center justify-center gap-8">
                     <div className="text-center">
                       <h3 className="text-xl font-bold">{selectedMatch.home_team}</h3>
-                      <span className="text-4xl font-bold text-primary">{selectedMatch.home_score ?? 0}</span>
+                      <span className="text-4xl font-bold text-primary">
+                        {selectedMatch.home_score !== null ? selectedMatch.home_score : '-'}
+                      </span>
                     </div>
                     <span className="text-2xl text-muted-foreground">-</span>
                     <div className="text-center">
                       <h3 className="text-xl font-bold">{selectedMatch.away_team}</h3>
-                      <span className="text-4xl font-bold text-primary">{selectedMatch.away_score ?? 0}</span>
+                      <span className="text-4xl font-bold text-primary">
+                        {selectedMatch.away_score !== null ? selectedMatch.away_score : '-'}
+                      </span>
                     </div>
                   </div>
                   {selectedMatch.minute && <p className="text-sm text-muted-foreground mt-2">{selectedMatch.minute}'</p>}
+                  {!['LIVE', '1H', '2H', 'HT', 'FT', 'FINISHED'].includes(selectedMatch.status) && (
+                    <p className="text-sm text-muted-foreground mt-2">
+                      {new Date(selectedMatch.start_time).toLocaleString('en-US', {
+                        weekday: 'long',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </p>
+                  )}
                 </div>
 
                 {/* Match Stats */}
