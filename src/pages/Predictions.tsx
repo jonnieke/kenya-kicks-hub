@@ -23,36 +23,36 @@ const Predictions = () => {
         const samplePredictions = [
           {
             id: "1",
-            homeTeam: "Kenya",
-            awayTeam: "Uganda", 
-            prediction: "2-1",
-            confidence: 75,
-            reasoning: "Kenya has strong home advantage and Uganda is missing key players due to injuries.",
-            league: "African Nations Championship (CHAN)",
-            date: "Tomorrow, 3:00 PM",
-            odds: { home: "2.1", draw: "3.2", away: "3.8" }
+            homeTeam: "Senegal",
+            awayTeam: "Morocco", 
+            prediction: "1-2",
+            confidence: 72,
+            reasoning: "Morocco's recent AFCON form and superior squad depth give them an edge despite Senegal's home advantage.",
+            league: "Africa Cup of Nations",
+            date: "Today, 8:00 PM",
+            odds: { home: "2.3", draw: "3.1", away: "2.8" }
           },
           {
             id: "2",
             homeTeam: "Nigeria",
-            awayTeam: "Ghana",
-            prediction: "1-1", 
-            confidence: 60,
-            reasoning: "Both teams are evenly matched with solid defensive records in recent matches.",
-            league: "African Nations Championship (CHAN)",
-            date: "Saturday, 6:00 PM",
-            odds: { home: "2.5", draw: "3.0", away: "2.9" }
+            awayTeam: "Egypt",
+            prediction: "2-1", 
+            confidence: 68,
+            reasoning: "Nigeria's attacking prowess at home should overcome Egypt's defensive setup, though it will be close.",
+            league: "CAF Champions League",
+            date: "Tomorrow, 6:00 PM",
+            odds: { home: "2.1", draw: "3.3", away: "3.2" }
           },
           {
             id: "3", 
-            homeTeam: "Morocco",
-            awayTeam: "Algeria",
-            prediction: "3-0",
-            confidence: 85,
-            reasoning: "Morocco's attacking form has been exceptional, while Algeria struggles defensively.",
-            league: "African Nations Championship (CHAN)",
-            date: "Sunday, 4:30 PM", 
-            odds: { home: "1.8", draw: "3.5", away: "4.2" }
+            homeTeam: "South Africa",
+            awayTeam: "Ghana",
+            prediction: "1-1",
+            confidence: 55,
+            reasoning: "Two evenly matched teams with similar recent form. Expect a tactical battle with few goals.",
+            league: "COSAFA Cup",
+            date: "Saturday, 4:00 PM", 
+            odds: { home: "2.6", draw: "2.9", away: "2.8" }
           }
         ]
         setPredictions(samplePredictions)
