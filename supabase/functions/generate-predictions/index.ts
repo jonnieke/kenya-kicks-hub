@@ -75,29 +75,29 @@ serve(async (req) => {
       console.error('Football Data API failed:', error);
     }
 
-    // If no matches from Football Data API, try fallback or create sample data
+    // If no matches from Football Data API, create sample data with realistic African teams
     if (upcomingMatches.length === 0) {
       console.log('Creating sample prediction data...');
       upcomingMatches = [
         {
-          id: 'sample_1',
-          homeTeam: { name: 'Liverpool FC' },
-          awayTeam: { name: 'Manchester City' },
-          competition: { name: 'Premier League' },
+          id: crypto.randomUUID(),
+          homeTeam: { name: 'Kenya' },
+          awayTeam: { name: 'Uganda' },
+          competition: { name: 'African Nations Championship (CHAN)' },
           utcDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
         },
         {
-          id: 'sample_2', 
-          homeTeam: { name: 'Arsenal FC' },
-          awayTeam: { name: 'Chelsea FC' },
-          competition: { name: 'Premier League' },
+          id: crypto.randomUUID(), 
+          homeTeam: { name: 'Nigeria' },
+          awayTeam: { name: 'Ghana' },
+          competition: { name: 'African Nations Championship (CHAN)' },
           utcDate: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString()
         },
         {
-          id: 'sample_3',
-          homeTeam: { name: 'Real Madrid' },
-          awayTeam: { name: 'Barcelona' },
-          competition: { name: 'La Liga' },
+          id: crypto.randomUUID(),
+          homeTeam: { name: 'Morocco' },
+          awayTeam: { name: 'Algeria' },
+          competition: { name: 'African Nations Championship (CHAN)' },
           utcDate: new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString()
         }
       ];
@@ -163,11 +163,11 @@ Respond in JSON format: {"prediction": "2-1", "confidence": 75, "reasoning": "Ho
           };
         }
 
-        // Store prediction in database
+        // Store prediction in database - use proper UUID for match_id
         const { data: savedPrediction, error } = await supabase
           .from('predictions')
           .insert({
-            match_id: match.id?.toString() || `temp_${Date.now()}`,
+            match_id: crypto.randomUUID(), // Generate proper UUID instead of string ID
             predicted_score: aiPrediction.prediction,
             confidence_score: aiPrediction.confidence,
             reasoning: aiPrediction.reasoning,

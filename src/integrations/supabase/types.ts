@@ -742,6 +742,39 @@ export type Database = {
         }
         Relationships: []
       }
+      scraped_news: {
+        Row: {
+          category: string
+          created_at: string
+          excerpt: string | null
+          id: string
+          scraped_at: string
+          source: string
+          source_url: string | null
+          title: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          scraped_at?: string
+          source: string
+          source_url?: string | null
+          title: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          scraped_at?: string
+          source?: string
+          source_url?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
       team_stats: {
         Row: {
           created_at: string
@@ -813,6 +846,10 @@ export type Database = {
       generate_affiliate_code: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      generate_sample_predictions: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       generate_tracking_code: {
         Args: Record<PropertyKey, never>
