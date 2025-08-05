@@ -19,7 +19,7 @@ serve(async (req) => {
 
   try {
     const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
-    const footballApiKey = Deno.env.get('FOOTBALL_API_KEY');
+    const footballApiKey = Deno.env.get('FOOTBALL_DATA_API_KEY');
     
     if (!geminiApiKey || !footballApiKey) {
       return new Response(JSON.stringify({ 
