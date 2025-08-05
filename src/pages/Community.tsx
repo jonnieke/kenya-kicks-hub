@@ -6,6 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { DiscussionForum } from "@/components/DiscussionForum";
+import { PollsAndVotes } from "@/components/PollsAndVotes";
+import { ProfileManager } from "@/components/ProfileManager";
 import { 
   Users, 
   MessageCircle, 
@@ -194,43 +197,20 @@ const Community = () => {
               </TabsContent>
 
               <TabsContent value="discussions" className="space-y-4">
-                <Card className="bg-gradient-card border-border">
-                  <CardContent className="pt-6">
-                    <div className="text-center py-12">
-                      <MessageCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-xl font-semibold mb-2">Discussion Forums</h3>
-                      <p className="text-muted-foreground mb-4">
-                        Coming soon! Organized discussions by league, team, and topic.
-                      </p>
-                      <Button variant="outline">
-                        Join Beta Testing
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                <DiscussionForum />
               </TabsContent>
 
               <TabsContent value="polls" className="space-y-4">
-                <Card className="bg-gradient-card border-border">
-                  <CardContent className="pt-6">
-                    <div className="text-center py-12">
-                      <Trophy className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-xl font-semibold mb-2">Community Polls</h3>
-                      <p className="text-muted-foreground mb-4">
-                        Vote on match predictions, player rankings, and more!
-                      </p>
-                      <Button variant="outline">
-                        Create First Poll
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                <PollsAndVotes />
               </TabsContent>
             </Tabs>
           </div>
 
           {/* Sidebar */}
           <div className="space-y-6">
+            {/* Profile Manager */}
+            <ProfileManager />
+            
             {/* Top Contributors */}
             <Card className="bg-gradient-card border-border">
               <CardHeader>
