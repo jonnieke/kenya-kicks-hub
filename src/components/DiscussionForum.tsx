@@ -83,7 +83,7 @@ export const DiscussionForum = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setDiscussions(data || []);
+      setDiscussions(data as Discussion[] || []);
     } catch (error) {
       console.error('Error fetching discussions:', error);
       toast({
@@ -106,7 +106,7 @@ export const DiscussionForum = () => {
         .order('created_at', { ascending: true });
 
       if (error) throw error;
-      setReplies(data || []);
+      setReplies(data as DiscussionReply[] || []);
     } catch (error) {
       console.error('Error fetching replies:', error);
       toast({

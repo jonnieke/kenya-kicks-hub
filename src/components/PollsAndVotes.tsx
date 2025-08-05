@@ -109,7 +109,7 @@ export const PollsAndVotes = () => {
         };
       }) || [];
 
-      setPolls(pollsWithVotes);
+      setPolls(pollsWithVotes as Poll[]);
     } catch (error) {
       console.error('Error fetching polls:', error);
       toast({
@@ -233,26 +233,17 @@ export const PollsAndVotes = () => {
       if (error) throw error;
 
       // Update vote counts
-      const { error: updateOptionError } = await supabase.rpc('increment', {
-        table_name: 'poll_options',
-        row_id: optionId,
-        x: 1
-      });
+      const { data: optionData } = await supabase
+        .from('poll_options')
+        .select('vote_count')
+        .eq('id', optionId)
+        .single();
 
-      if (updateOptionError) {
-        // Fallback: manually update vote count
-        const { data: optionData } = await supabase
+      if (optionData) {
+        await supabase
           .from('poll_options')
-          .select('vote_count')
-          .eq('id', optionId)
-          .single();
-
-        if (optionData) {
-          await supabase
-            .from('poll_options')
-            .update({ vote_count: optionData.vote_count + 1 })
-            .eq('id', optionId);
-        }
+          .update({ vote_count: optionData.vote_count + 1 })
+          .eq('id', optionId);
       }
 
       // Update total votes for poll
