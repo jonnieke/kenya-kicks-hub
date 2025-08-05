@@ -18,10 +18,18 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Starting prediction generation...');
+    
     const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
     const footballApiKey = Deno.env.get('FOOTBALL_DATA_API_KEY');
     
+    console.log('API Keys check:', {
+      gemini: geminiApiKey ? 'Present' : 'Missing',
+      football: footballApiKey ? 'Present' : 'Missing'
+    });
+    
     if (!geminiApiKey || !footballApiKey) {
+      console.log('Missing API keys!');
       return new Response(JSON.stringify({ 
         error: 'Missing required API keys' 
       }), {
@@ -100,38 +108,42 @@ Respond in JSON format: {"prediction": "2-1", "confidence": 75, "reasoning": "Ho
         const { data: savedPrediction, error } = await supabase
           .from('predictions')
           .insert({
-            home_team: match.homeTeam?.name || 'Unknown',
-            away_team: match.awayTeam?.name || 'Unknown',
-            league: match.competition?.name || 'Unknown',
-            match_date: match.utcDate,
-            prediction: aiPrediction.prediction,
-            confidence: aiPrediction.confidence,
+            match_id: match.id?.toString() || `temp_${Date.now()}`,
+            predicted_score: aiPrediction.prediction,
+            confidence_score: aiPrediction.confidence,
             reasoning: aiPrediction.reasoning,
-            external_match_id: match.id?.toString()
+            ai_model_used: 'gemini-1.5-flash',
+            home_win_odds: Math.random() * 2 + 1.5,
+            draw_odds: Math.random() * 2 + 2.5,
+            away_win_odds: Math.random() * 3 + 2
           })
           .select()
           .single();
 
+        console.log('Database insert result:', { savedPrediction, error });
+
         if (!error && savedPrediction) {
           predictions.push({
             id: savedPrediction.id,
-            homeTeam: savedPrediction.home_team,
-            awayTeam: savedPrediction.away_team,
-            prediction: savedPrediction.prediction,
-            confidence: savedPrediction.confidence,
+            homeTeam: match.homeTeam?.name || 'Unknown',
+            awayTeam: match.awayTeam?.name || 'Unknown', 
+            prediction: savedPrediction.predicted_score,
+            confidence: savedPrediction.confidence_score,
             reasoning: savedPrediction.reasoning,
-            league: savedPrediction.league,
-            date: new Date(savedPrediction.match_date).toLocaleDateString('en-US', {
+            league: match.competition?.name || 'Unknown',
+            date: new Date(match.utcDate).toLocaleDateString('en-US', {
               weekday: 'long',
               hour: '2-digit',
               minute: '2-digit'
             }),
             odds: {
-              home: (Math.random() * 2 + 1.5).toFixed(1),
-              draw: (Math.random() * 2 + 2.5).toFixed(1),
-              away: (Math.random() * 3 + 2).toFixed(1)
+              home: savedPrediction.home_win_odds?.toFixed(1) || "2.1",
+              draw: savedPrediction.draw_odds?.toFixed(1) || "3.2", 
+              away: savedPrediction.away_win_odds?.toFixed(1) || "3.8"
             }
           });
+        } else if (error) {
+          console.error('Database insert error:', error);
         }
       } catch (aiError) {
         console.error('AI prediction error:', aiError);
