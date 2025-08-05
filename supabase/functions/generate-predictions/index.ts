@@ -21,11 +21,11 @@ serve(async (req) => {
     console.log('Starting prediction generation...');
     
     const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
-    const footballApiKey = Deno.env.get('APIFOOTBALL_KEY');
+    const footballApiKey = Deno.env.get('FOOTBALL_DATA_API_KEY');
     
     console.log('API Keys check:', {
       gemini: geminiApiKey ? 'Present' : 'Missing',
-      football: footballApiKey ? 'Present' : 'Missing'
+      footballData: footballApiKey ? 'Present' : 'Missing'
     });
     
     if (!geminiApiKey || !footballApiKey) {
@@ -38,22 +38,21 @@ serve(async (req) => {
       });
     }
 
-    // Fetch upcoming matches from API-FOOTBALL (using today's fixtures instead of 'next' parameter)
-    console.log('Fetching matches from API-FOOTBALL...');
+    // Fetch upcoming matches from Football Data API
+    console.log('Fetching matches from Football Data API...');
     const today = new Date().toISOString().split('T')[0];
-    const footballResponse = await fetch(`https://v3.football.api-sports.io/fixtures?date=${today}`, {
+    const footballResponse = await fetch(`https://api.football-data.org/v4/matches?dateFrom=${today}`, {
       headers: {
-        'X-RapidAPI-Key': footballApiKey,
-        'X-RapidAPI-Host': 'v3.football.api-sports.io'
+        'X-Auth-Token': footballApiKey
       }
     });
 
-    console.log('API-FOOTBALL response status:', footballResponse.status);
+    console.log('Football Data API response status:', footballResponse.status);
     const responseText = await footballResponse.text();
-    console.log('API-FOOTBALL raw response:', responseText.substring(0, 500));
+    console.log('Football Data API raw response:', responseText.substring(0, 500));
 
     if (!footballResponse.ok) {
-      console.error('API-FOOTBALL error:', responseText);
+      console.error('Football Data API error:', responseText);
       throw new Error(`Failed to fetch football data: ${footballResponse.status}`);
     }
 
@@ -62,16 +61,16 @@ serve(async (req) => {
       footballData = JSON.parse(responseText);
     } catch (e) {
       console.error('Failed to parse JSON:', e);
-      throw new Error('Invalid JSON response from API-FOOTBALL');
+      throw new Error('Invalid JSON response from Football Data API');
     }
     
     console.log('Football data received:', { 
-      results: footballData.results || 0,
-      fixtures: footballData.response?.length || 0,
-      errors: footballData.errors || 'none'
+      count: footballData.count || 0,
+      matches: footballData.matches?.length || 0,
+      filters: footballData.filters || 'none'
     });
     
-    const upcomingMatches = footballData.response?.slice(0, 5) || [];
+    const upcomingMatches = footballData.matches?.slice(0, 5) || [];
     console.log('Upcoming matches count:', upcomingMatches.length);
 
     // Generate AI predictions for each match
@@ -79,18 +78,18 @@ serve(async (req) => {
 
     for (const match of upcomingMatches) {
       console.log('Processing match:', {
-        id: match.fixture?.id,
-        home: match.teams?.home?.name,
-        away: match.teams?.away?.name,
-        league: match.league?.name
+        id: match.id,
+        home: match.homeTeam?.name,
+        away: match.awayTeam?.name,
+        competition: match.competition?.name
       });
 
       const prompt = `Analyze this football match and provide a prediction:
       
-Home Team: ${match.teams?.home?.name || 'Unknown'}
-Away Team: ${match.teams?.away?.name || 'Unknown'}
-Competition: ${match.league?.name || 'Unknown'}
-Date: ${match.fixture?.date}
+Home Team: ${match.homeTeam?.name || 'Unknown'}
+Away Team: ${match.awayTeam?.name || 'Unknown'}
+Competition: ${match.competition?.name || 'Unknown'}
+Date: ${match.utcDate}
 
 Based on team form, head-to-head records, and current standings, provide:
 1. Score prediction (format: "X-Y")
@@ -137,7 +136,7 @@ Respond in JSON format: {"prediction": "2-1", "confidence": 75, "reasoning": "Ho
         const { data: savedPrediction, error } = await supabase
           .from('predictions')
           .insert({
-            match_id: match.fixture?.id?.toString() || `temp_${Date.now()}`,
+            match_id: match.id?.toString() || `temp_${Date.now()}`,
             predicted_score: aiPrediction.prediction,
             confidence_score: aiPrediction.confidence,
             reasoning: aiPrediction.reasoning,
@@ -154,13 +153,13 @@ Respond in JSON format: {"prediction": "2-1", "confidence": 75, "reasoning": "Ho
         if (!error && savedPrediction) {
           predictions.push({
             id: savedPrediction.id,
-            homeTeam: match.teams?.home?.name || 'Unknown',
-            awayTeam: match.teams?.away?.name || 'Unknown', 
+            homeTeam: match.homeTeam?.name || 'Unknown',
+            awayTeam: match.awayTeam?.name || 'Unknown', 
             prediction: savedPrediction.predicted_score,
             confidence: savedPrediction.confidence_score,
             reasoning: savedPrediction.reasoning,
-            league: match.league?.name || 'Unknown',
-            date: new Date(match.fixture?.date).toLocaleDateString('en-US', {
+            league: match.competition?.name || 'Unknown',
+            date: new Date(match.utcDate).toLocaleDateString('en-US', {
               weekday: 'long',
               hour: '2-digit',
               minute: '2-digit'
