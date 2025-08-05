@@ -20,26 +20,48 @@ type Match = {
   away_score?: number;
   minute?: string;
 };
-const quickStats = [{
-  label: "Matches Today",
-  value: "12",
-  icon: Activity
-}, {
-  label: "Live Now",
-  value: "3",
-  icon: Clock
-}, {
-  label: "Active Users",
-  value: "2.4k",
-  icon: Users
-}, {
-  label: "Predictions Made",
-  value: "156",
-  icon: TrendingUp
-}];
+interface QuickStat {
+  label: string;
+  value: string | number;
+  icon: any;
+}
+
+interface StatsData {
+  matchesToday: number;
+  liveNow: number;
+  predictions: number;
+}
 const Index = () => {
   const [featuredMatches, setFeaturedMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
+  const [statsData, setStatsData] = useState<StatsData>({
+    matchesToday: 0,
+    liveNow: 0,
+    predictions: 0
+  });
+
+  const quickStats: QuickStat[] = [
+    {
+      label: "Matches Today",
+      value: statsData.matchesToday,
+      icon: Activity
+    },
+    {
+      label: "Live Now", 
+      value: statsData.liveNow,
+      icon: Clock
+    },
+    {
+      label: "Active Users",
+      value: "2.4k", // Keep static for now
+      icon: Users
+    },
+    {
+      label: "Predictions Made",
+      value: statsData.predictions,
+      icon: TrendingUp
+    }
+  ];
 
   useEffect(() => {
     const fetchCurrentMatches = async () => {
@@ -68,7 +90,40 @@ const Index = () => {
       }
     };
 
+    const fetchStats = async () => {
+      try {
+        const today = new Date().toISOString().split('T')[0];
+        
+        // Count matches today
+        const { count: matchesToday } = await supabase
+          .from('matches')
+          .select('*', { count: 'exact', head: true })
+          .gte('match_date', today)
+          .lt('match_date', `${today}T23:59:59`);
+
+        // Count live matches
+        const { count: liveNow } = await supabase
+          .from('matches')
+          .select('*', { count: 'exact', head: true })
+          .in('status', ['live', '1H', '2H', 'HT']);
+
+        // Count total predictions
+        const { count: predictions } = await supabase
+          .from('predictions')
+          .select('*', { count: 'exact', head: true });
+
+        setStatsData({
+          matchesToday: matchesToday || 0,
+          liveNow: liveNow || 0,
+          predictions: predictions || 0
+        });
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+      }
+    };
+
     fetchCurrentMatches();
+    fetchStats();
   }, []);
 
   const formatMatchTime = (startTime: string, matchDate: string) => {
