@@ -75,7 +75,7 @@ export const PollsAndVotes = () => {
             option_text,
             vote_count
           ),
-          user_vote:poll_votes!inner (
+          user_vote:poll_votes!poll_votes_poll_id_fkey (
             poll_option_id
           )
         `)
