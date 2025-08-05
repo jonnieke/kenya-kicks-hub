@@ -70,7 +70,7 @@ export const PollsAndVotes = () => {
         .select(`
           *,
           profiles!polls_user_id_fkey (full_name),
-          poll_options (
+          poll_options!poll_options_poll_id_fkey (
             id,
             option_text,
             vote_count
@@ -90,7 +90,7 @@ export const PollsAndVotes = () => {
         .select(`
           *,
           profiles!polls_user_id_fkey (full_name),
-          poll_options (
+          poll_options!poll_options_poll_id_fkey (
             id,
             option_text,
             vote_count
