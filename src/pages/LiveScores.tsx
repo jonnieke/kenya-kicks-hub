@@ -150,7 +150,9 @@ const LiveScores = () => {
   const liveMatches = matches
     .filter(match => ['LIVE', '1H', '2H', 'HT'].includes(match.status))
     .sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime()); // Latest on top
-  const upcomingMatches = matches.filter(match => ['UPCOMING', 'TIMED', 'NS'].includes(match.status));
+  const upcomingMatches = matches
+    .filter(match => ['UPCOMING', 'TIMED', 'NS'].includes(match.status))
+    .sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime()); // Latest on top
   const recentResults = matches.filter(match => ['FT', 'FINISHED'].includes(match.status));
 
   // Group league tables by league

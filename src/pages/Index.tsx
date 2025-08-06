@@ -66,13 +66,17 @@ const Index = () => {
   useEffect(() => {
     const fetchCurrentMatches = async () => {
       try {
-        const today = new Date().toISOString().split('T')[0];
+        // Get current time in +3 GMT (EAT - East Africa Time)
+        const now = new Date();
+        const eatTime = new Date(now.getTime() + (3 * 60 * 60 * 1000)); // Add 3 hours
+        const today = eatTime.toISOString().split('T')[0];
+        const currentDateTime = eatTime.toISOString();
         
         const { data, error } = await supabase
           .from('matches')
           .select('*')
-          .or(`status.eq.live,status.eq.upcoming,match_date.gte.${today}`)
-          .order('match_date', { ascending: true })
+          .or(`status.in.(live,1H,2H,HT),status.eq.upcoming,start_time.gte.${currentDateTime}`)
+          .order('start_time', { ascending: true })
           .limit(5);
 
         if (error) {
@@ -81,7 +85,17 @@ const Index = () => {
         }
 
         if (data) {
-          setFeaturedMatches(data);
+          // Filter out matches that are more than 2 hours old to avoid showing stale upcoming matches
+          const filteredMatches = data.filter(match => {
+            const matchTime = new Date(match.start_time);
+            const timeDiff = eatTime.getTime() - matchTime.getTime();
+            const twoHoursInMs = 2 * 60 * 60 * 1000;
+            
+            // Keep live matches and upcoming matches within reasonable time window
+            return ['live', '1H', '2H', 'HT'].includes(match.status?.toLowerCase()) || timeDiff < twoHoursInMs;
+          });
+          
+          setFeaturedMatches(filteredMatches);
         }
       } catch (error) {
         console.error('Error fetching matches:', error);
@@ -92,14 +106,19 @@ const Index = () => {
 
     const fetchStats = async () => {
       try {
-        const today = new Date().toISOString().split('T')[0];
+        // Get current time in +3 GMT (EAT - East Africa Time)
+        const now = new Date();
+        const eatTime = new Date(now.getTime() + (3 * 60 * 60 * 1000));
+        const today = eatTime.toISOString().split('T')[0];
+        const todayStart = `${today}T00:00:00`;
+        const todayEnd = `${today}T23:59:59`;
         
-        // Count matches today
+        // Count matches today (using EAT timezone)
         const { count: matchesToday } = await supabase
           .from('matches')
           .select('*', { count: 'exact', head: true })
-          .gte('match_date', today)
-          .lt('match_date', `${today}T23:59:59`);
+          .gte('start_time', todayStart)
+          .lt('start_time', todayEnd);
 
         // Count live matches
         const { count: liveNow } = await supabase
