@@ -76,15 +76,15 @@ export function AppSidebar() {
             </div>
             {!isCollapsed && (
               <div>
-                <h2 className="font-bold text-lg text-sidebar-foreground">FootballKE</h2>
-                <p className="text-xs text-sidebar-foreground/60">Kenyan Football Hub</p>
+                <h2 className="font-bold text-lg text-sidebar-foreground">EuroFooty</h2>
+                <p className="text-xs text-sidebar-foreground/60">European Football Hub</p>
               </div>
             )}
           </div>
         </div>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Football Hub</SidebarGroupLabel>
+          <SidebarGroupLabel>European Football</SidebarGroupLabel>
 
           <SidebarGroupContent>
             <SidebarMenu>

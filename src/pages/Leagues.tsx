@@ -7,6 +7,20 @@ import { Trophy, Users, Calendar, TrendingUp, Target, Star, Shield, Zap, Circle 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
+
+interface Competition {
+  id: string;
+  name: string;
+  short_name: string;
+  api_id: number;
+  country: string;
+  category: string;
+  priority: number;
+  logo_url?: string;
+  primary_color?: string;
+  format: string;
+}
+
 interface LeagueTable {
   id: string;
   league: string;
@@ -20,7 +34,9 @@ interface LeagueTable {
   goals_against: number;
   goal_difference: number;
   points: number;
+  competition_id?: string;
 }
+
 interface Match {
   id: string;
   home_team: string;
@@ -32,9 +48,28 @@ interface Match {
   start_time: string;
   venue?: string | null;
   api_match_id?: string | null;
+  competition_id?: string;
 }
+
 const Leagues = () => {
-  const [selectedLeague, setSelectedLeague] = useState<string | null>(null);
+  const [selectedCompetition, setSelectedCompetition] = useState<string | null>(null);
+
+  // Fetch competitions
+  const {
+    data: competitions = [],
+    isLoading: competitionsLoading
+  } = useQuery({
+    queryKey: ['competitions'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('competitions')
+        .select('*')
+        .eq('is_active', true)
+        .order('priority', { ascending: true });
+      if (error) throw error;
+      return data as Competition[];
+    }
+  });
 
   // Fetch league tables
   const {
@@ -44,62 +79,30 @@ const Leagues = () => {
   } = useQuery({
     queryKey: ['league_tables'],
     queryFn: async () => {
-      const {
-        data,
-        error
-      } = await supabase.from('league_tables').select('*').order('league', {
-        ascending: true
-      }).order('position', {
-        ascending: true
-      });
+      const { data, error } = await supabase
+        .from('league_tables')
+        .select('*')
+        .order('league', { ascending: true })
+        .order('position', { ascending: true });
       if (error) throw error;
       return data as LeagueTable[];
     }
   });
 
-  // Fetch recent matches with CHAN priority
+  // Fetch matches
   const {
     data: matches = [],
     isLoading: matchesLoading
   } = useQuery({
-    queryKey: ['recent_matches'],
+    queryKey: ['matches'],
     queryFn: async () => {
-      const {
-        data,
-        error
-      } = await supabase.from('matches').select('*').order('start_time', {
-        ascending: false
-      }).limit(50);
+      const { data, error } = await supabase
+        .from('matches')
+        .select('*')
+        .order('start_time', { ascending: false })
+        .limit(100);
       if (error) throw error;
       return data as Match[];
-    }
-  });
-
-  // Fetch CHAN specific matches - exclude mock/placeholder data
-  const {
-    data: chanMatches = [],
-    isLoading: chanMatchesLoading
-  } = useQuery({
-    queryKey: ['chan_matches'],
-    queryFn: async () => {
-      const {
-        data,
-        error
-      } = await supabase.from('matches').select('*')
-        .or('league.ilike.%African Nations Championship%,league.ilike.%CHAN%')
-        .order('start_time', { ascending: false })
-        .limit(20);
-      if (error) throw error;
-      
-      // Filter out mock/placeholder data
-      const realMatches = (data as Match[]).filter(match => 
-        match.api_match_id && 
-        !match.api_match_id.startsWith('caf_chan_') &&
-        match.venue && // Real matches have venues
-        !(match.home_team?.includes("A'") || match.away_team?.includes("A'")) // Exclude placeholder team names
-      );
-      
-      return realMatches;
     }
   });
 
@@ -110,12 +113,12 @@ const Leagues = () => {
   } = useQuery({
     queryKey: ['live_matches'],
     queryFn: async () => {
-      const {
-        data,
-        error
-      } = await supabase.from('matches').select('*').in('status', ['LIVE', '1H', '2H', 'HT']).order('start_time', {
-        ascending: false
-      }).limit(10);
+      const { data, error } = await supabase
+        .from('matches')
+        .select('*')
+        .in('status', ['LIVE', '1H', '2H', 'HT'])
+        .order('start_time', { ascending: false })
+        .limit(10);
       if (error) throw error;
       return data as Match[];
     },
@@ -142,85 +145,66 @@ const Leagues = () => {
     }
   };
 
-  // Group tables by league
+  // Group tables by league and competition
   const groupedTables = leagueTables.reduce((acc, team) => {
     if (!acc[team.league]) acc[team.league] = [];
     acc[team.league].push(team);
     return acc;
   }, {} as Record<string, LeagueTable[]>);
 
-  // Group all matches by league
-  const groupedMatches = matches.reduce((acc, match) => {
-    if (!acc[match.league]) acc[match.league] = [];
-    acc[match.league].push(match);
-    return acc;
-  }, {} as Record<string, Match[]>);
+  // Filter matches by competition
+  const getMatchesForCompetition = (competitionName: string) => {
+    return matches.filter(match => 
+      match.league.toLowerCase().includes(competitionName.toLowerCase()) ||
+      (competitionName === 'Premier League' && match.league === 'Premier League') ||
+      (competitionName === 'La Liga EA SPORTS' && match.league.includes('La Liga')) ||
+      (competitionName === 'Serie A' && match.league === 'Serie A') ||
+      (competitionName === 'Bundesliga' && match.league === 'Bundesliga') ||
+      (competitionName === 'UEFA Champions League' && match.league.includes('Champions League')) ||
+      (competitionName === 'UEFA Europa League' && match.league.includes('Europa League') && !match.league.includes('Conference')) ||
+      (competitionName === 'UEFA Europa Conference League' && match.league.includes('Conference League'))
+    );
+  };
 
-  // Group CHAN matches by status and time
-  const now = new Date();
-  const chanLiveMatches = chanMatches.filter(match => 
-    ['LIVE', '1H', '2H', 'HT'].includes(match.status)
-  );
-  const chanRecentMatches = chanMatches.filter(match => 
-    ['FT', 'FINISHED'].includes(match.status) ||
-    (match.start_time && new Date(match.start_time) < now && !['LIVE', '1H', '2H', 'HT'].includes(match.status))
-  );
-  const chanUpcomingMatches = chanMatches.filter(match => 
-    match.start_time && 
-    new Date(match.start_time) > now &&
-    !['LIVE', '1H', '2H', 'HT', 'FT', 'FINISHED'].includes(match.status)
-  ).sort((a, b) => new Date(a.start_time!).getTime() - new Date(b.start_time!).getTime());
-
-  // Get unique leagues, prioritize CHAN
-  const allLeagues = Object.keys(groupedTables);
-  const chanLeagues = allLeagues.filter(league => 
-    league.includes('African Nations Championship') || 
-    league.includes('CHAN')
-  );
-  const otherLeagues = allLeagues.filter(league => 
-    !league.includes('African Nations Championship') && 
-    !league.includes('CHAN')
-  );
-  const leagues = [...chanLeagues, ...otherLeagues];
-
-  // Set default selected league to CHAN if available, otherwise show CHAN matches view
+  // Set default selected competition
   useEffect(() => {
-    if (leagues.length > 0 && !selectedLeague) {
-      const chanLeague = leagues.find(league => 
-        league.includes('African Nations Championship') || 
-        league.includes('CHAN')
-      );
-      setSelectedLeague(chanLeague || 'CHAN_TOURNAMENT');
-    } else if (leagues.length === 0 && !selectedLeague) {
-      setSelectedLeague('CHAN_TOURNAMENT');
+    if (competitions.length > 0 && !selectedCompetition) {
+      setSelectedCompetition(competitions[0].name); // Premier League by default
     }
-  }, [leagues, selectedLeague]);
+  }, [competitions, selectedCompetition]);
 
   // Set up real-time subscriptions
   useEffect(() => {
-    const tablesChannel = supabase.channel('league-tables-changes').on('postgres_changes', {
-      event: '*',
-      schema: 'public',
-      table: 'league_tables'
-    }, () => {
-      refetchTables();
-    }).subscribe();
+    const tablesChannel = supabase
+      .channel('league-tables-changes')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'league_tables'
+      }, () => {
+        refetchTables();
+      })
+      .subscribe();
+
     return () => {
       supabase.removeChannel(tablesChannel);
     };
   }, [refetchTables]);
+
   const getPositionIcon = (position: number) => {
     if (position === 1) return <Trophy className="w-4 h-4 text-yellow-500" />;
     if (position === 2) return <Star className="w-4 h-4 text-gray-400" />;
     if (position === 3) return <Target className="w-4 h-4 text-amber-600" />;
     return null;
   };
+
   const getPositionBadge = (position: number, totalTeams: number) => {
     if (position === 1) return "champion";
     if (position <= 4) return "qualification";
     if (position >= totalTeams - 2) return "relegation";
     return "safe";
   };
+
   const getPositionColor = (position: number, totalTeams: number) => {
     const badge = getPositionBadge(position, totalTeams);
     switch (badge) {
@@ -234,7 +218,27 @@ const Leagues = () => {
         return "";
     }
   };
-  return <div className="min-h-screen bg-background p-6">
+
+  const getCategoryIcon = (category: string) => {
+    if (category === 'european') return '🏆';
+    return '⚽';
+  };
+
+  const selectedLeague = selectedCompetition ? groupedTables[selectedCompetition] : [];
+  const selectedMatches = selectedCompetition ? getMatchesForCompetition(selectedCompetition) : [];
+
+  const liveMatchesForCompetition = selectedMatches.filter(match => 
+    ['LIVE', '1H', '2H', 'HT'].includes(match.status)
+  );
+  const recentResults = selectedMatches.filter(match => 
+    ['FT', 'FINISHED'].includes(match.status)
+  ).slice(0, 10);
+  const upcomingMatches = selectedMatches.filter(match => 
+    ['UPCOMING', 'TIMED', 'NS'].includes(match.status)
+  ).slice(0, 10);
+
+  return (
+    <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -243,12 +247,17 @@ const Leagues = () => {
               <Trophy className="w-6 h-6 text-background" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-foreground">CAF African Nations Championship (CHAN)</h1>
-              <p className="text-muted-foreground">Focus on CHAN tournament standings and matches</p>
+              <h1 className="text-3xl font-bold text-foreground">European Football Leagues</h1>
+              <p className="text-muted-foreground">Premier League, La Liga, Serie A, Bundesliga & UEFA Competitions</p>
             </div>
           </div>
           <div className="flex gap-2">
-            <Button onClick={() => refetchTables()} disabled={tablesLoading} variant="outline" size="sm">
+            <Button
+              onClick={() => refetchTables()}
+              disabled={tablesLoading}
+              variant="outline"
+              size="sm"
+            >
               <TrendingUp className={`w-4 h-4 mr-2 ${tablesLoading ? 'animate-spin' : ''}`} />
               Refresh
             </Button>
@@ -299,36 +308,47 @@ const Leagues = () => {
           </Card>
         )}
 
-        {/* League Selection - CHAN prioritized */}
-        {leagues.length > 0 && <div className="flex gap-2 overflow-x-auto pb-2">
-            {leagues.map(league => {
-              const isChanLeague = league.includes('African Nations Championship') || league.includes('CHAN');
-              return (
-                <Button 
-                  key={league} 
-                  variant={selectedLeague === league ? "default" : "outline"} 
-                  onClick={() => setSelectedLeague(league)} 
-                  className={`whitespace-nowrap ${isChanLeague ? 'ring-2 ring-primary/50' : ''}`}
+        {/* Competition Selection */}
+        {competitions.length > 0 && (
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold">Select Competition</h3>
+            <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-4">
+              {competitions.map(competition => (
+                <Button
+                  key={competition.id}
+                  variant={selectedCompetition === competition.name ? "default" : "outline"}
+                  onClick={() => setSelectedCompetition(competition.name)}
+                  className="justify-start h-auto p-3"
                 >
-                  <Shield className="w-4 h-4 mr-2" />
-                  {isChanLeague ? `🏆 ${league}` : league}
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">{getCategoryIcon(competition.category)}</span>
+                    <div className="text-left">
+                      <div className="font-medium">{competition.short_name}</div>
+                      <div className="text-xs text-muted-foreground">{competition.country}</div>
+                    </div>
+                  </div>
                 </Button>
-              );
-            })}
-          </div>}
+              ))}
+            </div>
+          </div>
+        )}
 
-          {(tablesLoading || chanMatchesLoading) ? <div className="text-center py-12">
+        {/* Main Content */}
+        {(competitionsLoading || tablesLoading) ? (
+          <div className="text-center py-12">
             <TrendingUp className="w-12 h-12 animate-spin mx-auto mb-4 text-muted-foreground" />
-            <p className="text-muted-foreground">Loading CHAN tournament data...</p>
-          </div> : <Tabs defaultValue="chan-overview" className="w-full">
+            <p className="text-muted-foreground">Loading European football data...</p>
+          </div>
+        ) : (
+          <Tabs defaultValue="standings" className="w-full">
             <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="chan-overview" className="flex items-center gap-2">
-                <Trophy className="w-4 h-4" />
-                CHAN Live
-              </TabsTrigger>
               <TabsTrigger value="standings" className="flex items-center gap-2">
                 <Trophy className="w-4 h-4" />
                 Standings
+              </TabsTrigger>
+              <TabsTrigger value="live" className="flex items-center gap-2">
+                <Circle className="w-4 h-4" />
+                Live & Upcoming
               </TabsTrigger>
               <TabsTrigger value="recent" className="flex items-center gap-2">
                 <Calendar className="w-4 h-4" />
@@ -340,189 +360,38 @@ const Leagues = () => {
               </TabsTrigger>
             </TabsList>
 
-            {/* CHAN Tournament Overview */}
-            <TabsContent value="chan-overview" className="space-y-6">
-              {/* Live CHAN Matches */}
-              {chanLiveMatches.length > 0 && (
-                <Card className="bg-gradient-to-r from-red-500/10 to-orange-500/10 border-red-500/20">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-red-600">
-                      🏆 CHAN Live Matches
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid gap-3 md:grid-cols-2">
-                      {chanLiveMatches.map(match => (
-                        <div key={match.id} className="bg-background/80 rounded-lg p-4 border border-red-500/30">
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex-1 text-center">
-                              <div className="font-semibold text-sm">{match.home_team}</div>
-                            </div>
-                            <div className="flex items-center gap-3 px-4">
-                              <span className="text-xl font-bold text-primary">{match.home_score ?? 0}</span>
-                              <span className="text-red-500 font-medium">-</span>
-                              <span className="text-xl font-bold text-primary">{match.away_score ?? 0}</span>
-                            </div>
-                            <div className="flex-1 text-center">
-                              <div className="font-semibold text-sm">{match.away_team}</div>
-                            </div>
-                          </div>
-                          <div className="flex items-center justify-between text-xs">
-                            <span className="text-muted-foreground">{match.venue || 'Venue pending'}</span>
-                            <span className="bg-red-500 text-white px-2 py-1 rounded-full font-medium animate-pulse">
-                              {match.status}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Recent CHAN Results */}
-              <Card className="bg-gradient-card">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    🏆 Recent CHAN Results
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {chanRecentMatches.length > 0 ? (
-                    <div className="grid gap-3">
-                      {chanRecentMatches.slice(0, 5).map(match => (
-                        <div key={match.id} className="bg-background/50 rounded-lg p-3 border">
-                          <div className="flex items-center justify-between">
-                            <div className="flex-1 text-center">
-                              <div className="font-medium text-sm">{match.home_team}</div>
-                            </div>
-                            <div className="flex items-center gap-3 px-4">
-                              <span className="text-lg font-bold">{match.home_score ?? 0}</span>
-                              <span className="text-muted-foreground">-</span>
-                              <span className="text-lg font-bold">{match.away_score ?? 0}</span>
-                            </div>
-                            <div className="flex-1 text-center">
-                              <div className="font-medium text-sm">{match.away_team}</div>
-                            </div>
-                          </div>
-                          <div className="mt-2 text-center text-xs text-muted-foreground">
-                            {new Date(match.start_time).toLocaleDateString('en-US', {
-                              weekday: 'short',
-                              month: 'short',
-                              day: 'numeric'
-                             })} • {match.venue || 'Venue pending'}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8">
-                      <Trophy className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                      <p className="text-muted-foreground">No recent CHAN matches available</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Upcoming CHAN Matches */}
-              {chanUpcomingMatches.length > 0 && (
-                <Card className="bg-gradient-card">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      🗓️ Upcoming CHAN Matches
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid gap-3">
-                      {chanUpcomingMatches.slice(0, 5).map(match => (
-                        <div key={match.id} className="bg-background/50 rounded-lg p-3 border">
-                          <div className="flex items-center justify-between">
-                            <div className="flex-1 text-center">
-                              <div className="font-medium text-sm">{match.home_team}</div>
-                            </div>
-                            <div className="flex items-center gap-3 px-4">
-                              <span className="text-sm text-muted-foreground">vs</span>
-                            </div>
-                            <div className="flex-1 text-center">
-                              <div className="font-medium text-sm">{match.away_team}</div>
-                            </div>
-                          </div>
-                          <div className="mt-2 text-center text-xs text-muted-foreground">
-                            {new Date(match.start_time).toLocaleDateString('en-US', {
-                              weekday: 'short',
-                              month: 'short',
-                              day: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit'
-                              })} • {match.venue || 'Venue pending'}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-            </TabsContent>
-
             {/* League Standings */}
             <TabsContent value="standings" className="space-y-6">
-              {selectedLeague === 'CHAN_TOURNAMENT' ? (
+              {selectedLeague.length > 0 ? (
                 <Card className="bg-gradient-card">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      🏆 CAF African Nations Championship - Tournament Info
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-center py-8">
-                      <Trophy className="w-16 h-16 mx-auto mb-4 text-yellow-500" />
-                      <h3 className="text-xl font-bold mb-2">CHAN Tournament</h3>
-                      <p className="text-muted-foreground mb-4">
-                        Tournament for players competing in their home country leagues
-                      </p>
-                      <div className="grid md:grid-cols-3 gap-4 text-sm">
-                        <div className="bg-background/50 p-3 rounded-lg">
-                          <div className="font-semibold">Live Matches</div>
-                          <div className="text-lg font-bold text-red-500">{chanLiveMatches.length}</div>
-                        </div>
-                        <div className="bg-background/50 p-3 rounded-lg">
-                          <div className="font-semibold">Recent Results</div>
-                          <div className="text-lg font-bold text-green-500">{chanRecentMatches.length}</div>
-                        </div>
-                        <div className="bg-background/50 p-3 rounded-lg">
-                          <div className="font-semibold">Upcoming</div>
-                          <div className="text-lg font-bold text-blue-500">{chanUpcomingMatches.length}</div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ) : selectedLeague && groupedTables[selectedLeague] ? (
-                <Card className="bg-gradient-card">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Trophy className="w-5 h-5" />
-                      {selectedLeague} - League Table
+                      <Trophy className="w-5 h-5 text-primary" />
+                      {selectedCompetition} - Current Standings
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead className="w-12">Pos</TableHead>
+                          <TableHead className="w-12">#</TableHead>
                           <TableHead>Team</TableHead>
-                          <TableHead className="text-center w-12">MP</TableHead>
-                          <TableHead className="text-center w-12">W</TableHead>
-                          <TableHead className="text-center w-12">D</TableHead>
-                          <TableHead className="text-center w-12">L</TableHead>
-                          <TableHead className="text-center w-16">GF</TableHead>
-                          <TableHead className="text-center w-16">GA</TableHead>
-                          <TableHead className="text-center w-16">GD</TableHead>
-                          <TableHead className="text-center w-12">Pts</TableHead>
+                          <TableHead className="text-center">MP</TableHead>
+                          <TableHead className="text-center">W</TableHead>
+                          <TableHead className="text-center">D</TableHead>
+                          <TableHead className="text-center">L</TableHead>
+                          <TableHead className="text-center">GF</TableHead>
+                          <TableHead className="text-center">GA</TableHead>
+                          <TableHead className="text-center">GD</TableHead>
+                          <TableHead className="text-center">Pts</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {groupedTables[selectedLeague].map(team => <TableRow key={team.id} className={getPositionColor(team.position, groupedTables[selectedLeague].length)}>
+                        {selectedLeague.map((team) => (
+                          <TableRow
+                            key={team.id}
+                            className={getPositionColor(team.position, selectedLeague.length)}
+                          >
                             <TableCell className="font-medium">
                               <div className="flex items-center gap-2">
                                 {getPositionIcon(team.position)}
@@ -537,169 +406,231 @@ const Leagues = () => {
                             <TableCell className="text-center">{team.goals_for}</TableCell>
                             <TableCell className="text-center">{team.goals_against}</TableCell>
                             <TableCell className="text-center">
-                              <span className={team.goal_difference > 0 ? "text-green-600 font-medium" : team.goal_difference < 0 ? "text-red-600 font-medium" : ""}>
-                                {team.goal_difference > 0 ? '+' : ''}{team.goal_difference}
-                              </span>
+                              <Badge variant={team.goal_difference >= 0 ? "default" : "secondary"}>
+                                {team.goal_difference >= 0 ? "+" : ""}{team.goal_difference}
+                              </Badge>
                             </TableCell>
-                            <TableCell className="text-center font-bold text-primary">{team.points}</TableCell>
-                          </TableRow>)}
+                            <TableCell className="text-center font-bold">{team.points}</TableCell>
+                          </TableRow>
+                        ))}
                       </TableBody>
                     </Table>
                   </CardContent>
                 </Card>
               ) : (
-                <div className="text-center py-12">
-                  <Trophy className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                  <p className="text-muted-foreground">No league table available for this tournament</p>
-                </div>
+                <Card className="bg-gradient-card">
+                  <CardContent className="text-center py-12">
+                    <Trophy className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                    <p className="text-muted-foreground">
+                      No standings available for {selectedCompetition || 'this competition'}
+                    </p>
+                  </CardContent>
+                </Card>
               )}
             </TabsContent>
 
-            {/* Recent Results */}
-            <TabsContent value="recent" className="space-y-4">
-              {selectedLeague === 'CHAN_TOURNAMENT' ? (
-                <div className="grid gap-4">
-                  {chanRecentMatches.length > 0 ? chanRecentMatches.slice(0, 10).map(match => (
-                    <Card key={match.id} className="bg-gradient-card">
-                      <CardContent className="pt-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1 text-center">
-                            <h4 className="font-semibold">{match.home_team}</h4>
+            {/* Live & Upcoming Matches */}
+            <TabsContent value="live" className="space-y-6">
+              {/* Live Matches for Selected Competition */}
+              {liveMatchesForCompetition.length > 0 && (
+                <Card className="bg-gradient-to-r from-red-500/10 to-orange-500/10 border-red-500/20">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-red-600">
+                      <Circle className="w-3 h-3 fill-red-500 animate-pulse" />
+                      Live Now - {selectedCompetition}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid gap-3">
+                      {liveMatchesForCompetition.map(match => (
+                        <div key={match.id} className="bg-background/80 rounded-lg p-4 border border-red-500/30">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex-1 text-center">
+                              <div className="font-semibold">{match.home_team}</div>
+                            </div>
+                            <div className="flex items-center gap-3 px-4">
+                              <span className="text-2xl font-bold text-primary">{match.home_score ?? 0}</span>
+                              <span className="text-red-500 font-medium">-</span>
+                              <span className="text-2xl font-bold text-primary">{match.away_score ?? 0}</span>
+                            </div>
+                            <div className="flex-1 text-center">
+                              <div className="font-semibold">{match.away_team}</div>
+                            </div>
                           </div>
-                          <div className="flex items-center gap-4 px-8">
-                            <span className="text-2xl font-bold">{match.home_score ?? 0}</span>
-                            <span className="text-lg text-muted-foreground">-</span>
-                            <span className="text-2xl font-bold">{match.away_score ?? 0}</span>
-                          </div>
-                          <div className="flex-1 text-center">
-                            <h4 className="font-semibold">{match.away_team}</h4>
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-muted-foreground">{match.venue || 'Venue TBD'}</span>
+                            <span className="bg-red-500 text-white px-2 py-1 rounded-full font-medium animate-pulse">
+                              {match.status}
+                            </span>
                           </div>
                         </div>
-                        <div className="mt-2 text-center text-sm text-muted-foreground">
-                          {new Date(match.start_time).toLocaleDateString('en-US', {
-                            weekday: 'short',
-                            month: 'short',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })} • {match.venue || 'Venue pending'}
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Upcoming Matches */}
+              <Card className="bg-gradient-card">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="w-5 h-5 text-primary" />
+                    Upcoming Matches - {selectedCompetition}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {upcomingMatches.length > 0 ? (
+                    <div className="grid gap-3">
+                      {upcomingMatches.map(match => (
+                        <div key={match.id} className="bg-background/50 rounded-lg p-3 border">
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <div className="font-medium">{match.home_team} vs {match.away_team}</div>
+                              <div className="text-sm text-muted-foreground">
+                                {new Date(match.start_time).toLocaleDateString('en-US', {
+                                  weekday: 'short',
+                                  month: 'short',
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </div>
+                            </div>
+                            <Badge variant="outline">{match.status}</Badge>
+                          </div>
                         </div>
-                      </CardContent>
-                    </Card>
-                  )) : (
+                      ))}
+                    </div>
+                  ) : (
                     <div className="text-center py-8">
                       <Calendar className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                      <p className="text-muted-foreground">No recent CHAN matches available</p>
+                      <p className="text-muted-foreground">No upcoming matches for {selectedCompetition}</p>
                     </div>
                   )}
-                </div>
-              ) : selectedLeague && groupedMatches[selectedLeague] ? <div className="grid gap-4">
-                  {groupedMatches[selectedLeague].filter(match => ['FT', 'FINISHED'].includes(match.status)).slice(0, 10).map(match => <Card key={match.id} className="bg-gradient-card">
-                      <CardContent className="pt-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1 text-center">
-                            <h4 className="font-semibold">{match.home_team}</h4>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Recent Results */}
+            <TabsContent value="recent" className="space-y-6">
+              <Card className="bg-gradient-card">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="w-5 h-5 text-primary" />
+                    Recent Results - {selectedCompetition}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {recentResults.length > 0 ? (
+                    <div className="grid gap-3">
+                      {recentResults.map(match => (
+                        <div key={match.id} className="bg-background/50 rounded-lg p-3 border">
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1 text-center">
+                              <div className="font-medium">{match.home_team}</div>
+                            </div>
+                            <div className="flex items-center gap-3 px-4">
+                              <span className="text-lg font-bold">{match.home_score ?? 0}</span>
+                              <span className="text-muted-foreground">-</span>
+                              <span className="text-lg font-bold">{match.away_score ?? 0}</span>
+                            </div>
+                            <div className="flex-1 text-center">
+                              <div className="font-medium">{match.away_team}</div>
+                            </div>
                           </div>
-                          <div className="flex items-center gap-4 px-8">
-                            <span className="text-2xl font-bold">{match.home_score ?? 0}</span>
-                            <span className="text-lg text-muted-foreground">-</span>
-                            <span className="text-2xl font-bold">{match.away_score ?? 0}</span>
-                          </div>
-                          <div className="flex-1 text-center">
-                            <h4 className="font-semibold">{match.away_team}</h4>
+                          <div className="mt-2 text-center text-sm text-muted-foreground">
+                            {new Date(match.start_time).toLocaleDateString('en-US', {
+                              weekday: 'short',
+                              month: 'short',
+                              day: 'numeric'
+                            })}
                           </div>
                         </div>
-                        <div className="mt-2 text-center text-sm text-muted-foreground">
-                          {new Date(match.start_time).toLocaleDateString('en-US', {
-                    weekday: 'short',
-                    month: 'short',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })}
-                        </div>
-                      </CardContent>
-                    </Card>)}
-                </div> : <div className="text-center py-8">
-                  <Calendar className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                  <p className="text-muted-foreground">No recent matches for this league</p>
-                </div>}
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <Calendar className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                      <p className="text-muted-foreground">No recent results for {selectedCompetition}</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </TabsContent>
 
             {/* Statistics */}
             <TabsContent value="stats" className="space-y-6">
-              {selectedLeague && groupedTables[selectedLeague] && <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <Card className="bg-gradient-card">
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-sm text-muted-foreground">Top Scorer</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2">
-                        {groupedTables[selectedLeague].sort((a, b) => b.goals_for - a.goals_for).slice(0, 3).map((team, index) => <div key={team.id} className="flex justify-between">
-                              <span className="text-sm">{team.team_name}</span>
-                              <span className="font-bold">{team.goals_for}</span>
-                            </div>)}
-                      </div>
-                    </CardContent>
-                  </Card>
+              <div className="grid gap-6 md:grid-cols-2">
+                <Card className="bg-gradient-card">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <TrendingUp className="w-5 h-5 text-primary" />
+                      Competition Statistics
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex justify-between">
+                      <span>Total Teams:</span>
+                      <span className="font-semibold">{selectedLeague.length}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Total Matches:</span>
+                      <span className="font-semibold">{selectedMatches.length}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Live Matches:</span>
+                      <span className="font-semibold text-red-500">{liveMatchesForCompetition.length}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Recent Results:</span>
+                      <span className="font-semibold">{recentResults.length}</span>
+                    </div>
+                  </CardContent>
+                </Card>
 
-                  <Card className="bg-gradient-card">
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-sm text-muted-foreground">Best Defense</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2">
-                        {groupedTables[selectedLeague].sort((a, b) => a.goals_against - b.goals_against).slice(0, 3).map((team, index) => <div key={team.id} className="flex justify-between">
-                              <span className="text-sm">{team.team_name}</span>
-                              <span className="font-bold">{team.goals_against}</span>
-                            </div>)}
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="bg-gradient-card">
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-sm text-muted-foreground">Most Wins</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2">
-                        {groupedTables[selectedLeague].sort((a, b) => b.wins - a.wins).slice(0, 3).map((team, index) => <div key={team.id} className="flex justify-between">
-                              <span className="text-sm">{team.team_name}</span>
-                              <span className="font-bold">{team.wins}</span>
-                            </div>)}
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="bg-gradient-card">
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-sm text-muted-foreground">League Summary</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <span>Teams</span>
-                          <span className="font-bold">{groupedTables[selectedLeague].length}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Total Goals</span>
-                          <span className="font-bold">
-                            {groupedTables[selectedLeague].reduce((sum, team) => sum + team.goals_for, 0)}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Matches Played</span>
-                          <span className="font-bold">
-                            {Math.max(...groupedTables[selectedLeague].map(team => team.matches_played))}
-                          </span>
+                <Card className="bg-gradient-card">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Users className="w-5 h-5 text-primary" />
+                      League Leader
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {selectedLeague.length > 0 ? (
+                      <div className="text-center">
+                        <Trophy className="w-12 h-12 mx-auto mb-4 text-yellow-500" />
+                        <h3 className="text-xl font-bold">{selectedLeague[0]?.team_name}</h3>
+                        <p className="text-muted-foreground">{selectedLeague[0]?.points} points</p>
+                        <div className="mt-4 grid grid-cols-3 gap-2 text-sm">
+                          <div>
+                            <div className="font-semibold">{selectedLeague[0]?.wins}</div>
+                            <div className="text-muted-foreground">Wins</div>
+                          </div>
+                          <div>
+                            <div className="font-semibold">{selectedLeague[0]?.draws}</div>
+                            <div className="text-muted-foreground">Draws</div>
+                          </div>
+                          <div>
+                            <div className="font-semibold">{selectedLeague[0]?.losses}</div>
+                            <div className="text-muted-foreground">Losses</div>
+                          </div>
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                </div>}
+                    ) : (
+                      <div className="text-center py-8">
+                        <Trophy className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                        <p className="text-muted-foreground">No league data available</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
             </TabsContent>
-          </Tabs>}
+          </Tabs>
+        )}
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default Leagues;

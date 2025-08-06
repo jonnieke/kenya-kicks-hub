@@ -79,15 +79,15 @@ serve(async (req) => {
 
     console.log(`Starting football data fetch operation: ${operation}`);
 
-    // Define the leagues we want to track
+    // Target European leagues - priority order
     const leagues = [
       { id: 39, name: 'Premier League', country: 'England' }, // Premier League
-      { id: 140, name: 'La Liga', country: 'Spain' }, // La Liga
-      { id: 78, name: 'Bundesliga', country: 'Germany' }, // Bundesliga
+      { id: 140, name: 'La Liga EA SPORTS', country: 'Spain' }, // La Liga
       { id: 135, name: 'Serie A', country: 'Italy' }, // Serie A
-      { id: 61, name: 'Ligue 1', country: 'France' }, // Ligue 1
-      // Add African leagues
-      { id: 233, name: 'CAF CHAN', country: 'Africa' }, // CAF African Nations Championship
+      { id: 78, name: 'Bundesliga', country: 'Germany' }, // Bundesliga
+      { id: 2, name: 'UEFA Champions League', country: 'Europe' }, // UCL
+      { id: 3, name: 'UEFA Europa League', country: 'Europe' }, // UEL
+      { id: 848, name: 'UEFA Europa Conference League', country: 'Europe' }, // UECL
     ];
 
     const results = {
@@ -200,8 +200,9 @@ serve(async (req) => {
     }
 
     if (operation === 'standings' || operation === 'all') {
-      // Fetch league standings for major leagues
-      for (const league of leagues.slice(0, 3)) { // Limit to first 3 to save API calls
+      // Fetch league standings for domestic leagues (not tournaments)
+      const domesticLeagues = leagues.filter(l => l.country !== 'Europe').slice(0, 4); // All 4 major domestic leagues
+      for (const league of domesticLeagues) {
         try {
           console.log(`Fetching standings for ${league.name}...`);
           const standingsResponse = await fetch(`https://v3.football.api-sports.io/standings?league=${league.id}&season=2025`, {

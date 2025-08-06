@@ -171,18 +171,18 @@ const Index = () => {
                     <Trophy className="w-8 h-8 md:w-10 md:h-10 text-background" />
                   </div>
                   <div className="text-xs md:text-sm font-medium text-primary uppercase tracking-wider">
-                    🔥 Kenya's #1 Football Hub
+                    🔥 Europe's Premium Football Hub
                   </div>
                 </div>
                 
                 <div className="space-y-6">
                   <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight">
                     <span className="text-foreground">Ball</span>
-                    <span className="bg-gradient-primary bg-clip-text text-transparent">Mtaani</span>
+                    <span className="bg-gradient-primary bg-clip-text text-transparent">Hub</span>
                   </h1>
                   
                   <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl">
-                    Experience the passion of Kenyan football like never before. Get live scores, breaking news, match predictions, and connect with thousands of fans in real-time.
+                    Your gateway to European football excellence. Follow Premier League, La Liga, Serie A, Bundesliga, and UEFA competitions with live scores, predictions, and expert analysis.
                   </p>
                   
                   <div className="flex flex-col sm:flex-row gap-4 pt-4">
@@ -216,17 +216,17 @@ const Index = () => {
               
               {/* Right Side Content - Desktop Only */}
               <div className="hidden lg:block lg:col-span-5 space-y-6">
-                {/* CAF CHAN Call-to-Action Banner */}
+                {/* Premier League Call-to-Action Banner */}
                 <div className="bg-gradient-to-r from-primary/20 to-primary/10 border border-primary/30 rounded-xl p-5 my-[125px] mx-[9px] px-[20px] py-[18px]">
                   <div className="flex items-center gap-3 mb-3">
                     <Trophy className="w-6 h-6 text-primary" />
-                    <span className="text-primary font-semibold text-lg">🏆 CAF CHAN</span>
+                    <span className="text-primary font-semibold text-lg">⚽ Premier League</span>
                   </div>
                   <p className="text-muted-foreground text-sm mb-4 leading-relaxed">
-                    Follow all the action from Africa's premier championship
+                    Follow the world's most exciting football league
                   </p>
                   <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold w-full">
-                    <Link to="/live-scores">View Matches →</Link>
+                    <Link to="/leagues">View Leagues →</Link>
                   </Button>
                 </div>
 
@@ -266,7 +266,7 @@ const Index = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             {loading ? (
-              <div className="text-center py-4 text-muted-foreground">Loading CAF CHAN matches...</div>
+              <div className="text-center py-4 text-muted-foreground">Loading European football matches...</div>
             ) : featuredMatches.length > 0 ? (
               featuredMatches.map((match, index) => <div key={match.id || index} className="flex items-center justify-between p-4 bg-background/50 rounded-lg">
                 <div className="flex items-center gap-4">
@@ -291,7 +291,7 @@ const Index = () => {
                 </div>
               </div>)
             ) : (
-              <div className="text-center py-4 text-muted-foreground">No CAF CHAN matches available</div>
+              <div className="text-center py-4 text-muted-foreground">No European football matches available</div>
             )}
             <Button asChild variant="outline" className="w-full">
               <Link to="/live-scores">View All Matches</Link>
@@ -310,7 +310,7 @@ const Index = () => {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground mb-4">
-                Stay updated with the latest football news from Kenya and around the world.
+                Stay updated with the latest European football news and transfer updates.
               </p>
               <Button asChild variant="outline" className="w-full">
                 <Link to="/news">Read News</Link>

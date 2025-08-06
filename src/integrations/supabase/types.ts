@@ -214,6 +214,60 @@ export type Database = {
         }
         Relationships: []
       }
+      competitions: {
+        Row: {
+          api_id: number
+          category: string
+          country: string
+          created_at: string
+          current_season: string | null
+          format: string | null
+          id: string
+          is_active: boolean
+          logo_url: string | null
+          name: string
+          primary_color: string | null
+          priority: number
+          secondary_color: string | null
+          short_name: string
+          updated_at: string
+        }
+        Insert: {
+          api_id: number
+          category?: string
+          country: string
+          created_at?: string
+          current_season?: string | null
+          format?: string | null
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          name: string
+          primary_color?: string | null
+          priority?: number
+          secondary_color?: string | null
+          short_name: string
+          updated_at?: string
+        }
+        Update: {
+          api_id?: number
+          category?: string
+          country?: string
+          created_at?: string
+          current_season?: string | null
+          format?: string | null
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          name?: string
+          primary_color?: string | null
+          priority?: number
+          secondary_color?: string | null
+          short_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       discussion_replies: {
         Row: {
           content: string
@@ -312,6 +366,7 @@ export type Database = {
       }
       league_tables: {
         Row: {
+          competition_id: string | null
           created_at: string
           draws: number | null
           goal_difference: number | null
@@ -328,6 +383,7 @@ export type Database = {
           wins: number | null
         }
         Insert: {
+          competition_id?: string | null
           created_at?: string
           draws?: number | null
           goal_difference?: number | null
@@ -344,6 +400,7 @@ export type Database = {
           wins?: number | null
         }
         Update: {
+          competition_id?: string | null
           created_at?: string
           draws?: number | null
           goal_difference?: number | null
@@ -359,13 +416,22 @@ export type Database = {
           updated_at?: string
           wins?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "league_tables_competition_id_fkey"
+            columns: ["competition_id"]
+            isOneToOne: false
+            referencedRelation: "competitions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       matches: {
         Row: {
           api_match_id: string | null
           away_score: number | null
           away_team: string
+          competition_id: string | null
           created_at: string
           home_score: number | null
           home_team: string
@@ -382,6 +448,7 @@ export type Database = {
           api_match_id?: string | null
           away_score?: number | null
           away_team: string
+          competition_id?: string | null
           created_at?: string
           home_score?: number | null
           home_team: string
@@ -398,6 +465,7 @@ export type Database = {
           api_match_id?: string | null
           away_score?: number | null
           away_team?: string
+          competition_id?: string | null
           created_at?: string
           home_score?: number | null
           home_team?: string
@@ -410,7 +478,15 @@ export type Database = {
           updated_at?: string
           venue?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "matches_competition_id_fkey"
+            columns: ["competition_id"]
+            isOneToOne: false
+            referencedRelation: "competitions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       news_articles: {
         Row: {
