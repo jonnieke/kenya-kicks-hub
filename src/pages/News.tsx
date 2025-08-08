@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Newspaper, TrendingUp, Clock } from "lucide-react";
+import { Newspaper, TrendingUp, Clock, Trophy, Globe, Star } from "lucide-react";
 import { NewsScraper } from "@/components/NewsScraper";
 import NewsArticleCard from "@/components/NewsArticleCard";
 import NewsComments from "@/components/NewsComments";
@@ -10,6 +10,7 @@ import { BannerAd, InArticleAd } from "@/components/AdSense";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import heroImage from "@/assets/international-leagues-hero.jpg";
 
 interface NewsArticle {
   id: string;
@@ -178,21 +179,71 @@ const News = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Newsletter Header */}
-      <div className="bg-gradient-primary text-background py-12">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center">
-            <div className="w-16 h-16 bg-background/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Newspaper className="w-8 h-8" />
-            </div>
-            <h1 className="text-4xl font-bold mb-2">African Football News</h1>
-            <p className="text-lg opacity-90">Your trusted source for CAF CHAN and African football updates</p>
-            <div className="flex items-center justify-center gap-2 mt-4 text-sm opacity-80">
-              <Clock className="w-4 h-4" />
-              Updated daily with the latest stories
+      {/* Hero Banner with International Leagues */}
+      <div className="relative h-[60vh] min-h-[500px] overflow-hidden">
+        {/* Background Image */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${heroImage})` }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/40" />
+        </div>
+        
+        {/* Content Overlay */}
+        <div className="relative z-10 h-full flex items-center">
+          <div className="max-w-6xl mx-auto px-6 w-full">
+            <div className="max-w-2xl">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 bg-primary/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                  <Globe className="w-6 h-6 text-primary" />
+                </div>
+                <Badge variant="secondary" className="bg-primary/20 text-primary border-primary/30">
+                  <Star className="w-3 h-3 mr-1" />
+                  International Football
+                </Badge>
+              </div>
+              
+              <h1 className="text-5xl md:text-6xl font-bold text-white mb-4 leading-tight">
+                Global Football
+                <span className="block text-primary">News Hub</span>
+              </h1>
+              
+              <p className="text-xl text-gray-200 mb-6 leading-relaxed">
+                Your premier destination for the latest news from Europe's top leagues: 
+                Premier League, La Liga, Serie A, Bundesliga, and UEFA competitions.
+              </p>
+              
+              {/* League Badges */}
+              <div className="flex flex-wrap gap-3 mb-6">
+                {[
+                  "Premier League",
+                  "La Liga", 
+                  "Serie A",
+                  "Bundesliga",
+                  "Champions League",
+                  "Europa League"
+                ].map((league) => (
+                  <Badge 
+                    key={league}
+                    variant="outline" 
+                    className="bg-white/10 backdrop-blur-sm text-white border-white/30 hover:bg-white/20 transition-colors"
+                  >
+                    <Trophy className="w-3 h-3 mr-1" />
+                    {league}
+                  </Badge>
+                ))}
+              </div>
+              
+              <div className="flex items-center gap-2 text-sm text-gray-300">
+                <Clock className="w-4 h-4" />
+                Updated live with breaking news and match reports
+              </div>
             </div>
           </div>
         </div>
+        
+        {/* Decorative Elements */}
+        <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-background to-transparent" />
       </div>
 
       <div className="max-w-6xl mx-auto px-6 py-8">
