@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Trophy, Activity, Newspaper, TrendingUp, Users, Clock, Calendar } from "lucide-react";
+import { Trophy, Activity, Newspaper, TrendingUp, Users, Clock, Calendar, Flame, Zap, Target, Star, Play, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { AffiliateRedirect } from "@/components/AffiliateRedirect";
 import { BannerAd, SidebarAd } from "@/components/AdSense";
@@ -152,89 +152,141 @@ const Index = () => {
     return new Date(matchDate).toLocaleDateString();
   };
 
-  return <div className="min-h-screen bg-background p-6">
+  return <div className="min-h-screen bg-gradient-hero relative overflow-hidden">
       <AffiliateRedirect />
-      <div className="max-w-6xl mx-auto space-y-8">
+      
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute top-20 left-10 w-64 h-64 bg-primary/5 rounded-full blur-3xl animate-float"></div>
+        <div className="absolute top-40 right-20 w-48 h-48 bg-accent/5 rounded-full blur-2xl animate-float" style={{animationDelay: '1s'}}></div>
+        <div className="absolute bottom-20 left-1/3 w-72 h-72 bg-primary/3 rounded-full blur-3xl animate-float" style={{animationDelay: '2s'}}></div>
+      </div>
+
+      <div className="relative z-10 max-w-7xl mx-auto px-6 py-8 space-y-12">
         {/* Hero Section */}
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary/20 via-background to-primary/10 p-6 md:p-12 lg:p-16">
-          <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/70 to-background/40 z-10" />
-          <div className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-30" style={{
-          backgroundImage: `url(${heroImage})`
-        }} />
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary/10 via-background/40 to-accent/5 backdrop-blur-sm border border-primary/20 shadow-elevated">
+          <div className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20" style={{
+            backgroundImage: `url(${heroImage})`
+          }} />
           
-          <div className="relative z-20 max-w-7xl mx-auto">
-            <div className="grid lg:grid-cols-12 gap-8 items-start">
+          <div className="relative z-20 p-8 md:p-12 lg:p-16">
+            <div className="grid lg:grid-cols-12 gap-12 items-center">
               {/* Main Content - Left Side */}
-              <div className="lg:col-span-7 space-y-8">
-                <div className="flex items-center gap-3">
-                  <div className="w-14 h-14 md:w-16 md:h-16 bg-gradient-primary rounded-2xl flex items-center justify-center shadow-lg">
-                    <Trophy className="w-8 h-8 md:w-10 md:h-10 text-background" />
+              <div className="lg:col-span-7 space-y-8 animate-slideInUp">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-primary rounded-3xl flex items-center justify-center shadow-glow animate-glow">
+                    <Trophy className="w-10 h-10 md:w-12 md:h-12 text-background" />
                   </div>
-                  <div className="text-xs md:text-sm font-medium text-primary uppercase tracking-wider">
-                    🔥 Europe's Premium Football Hub
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Flame className="w-5 h-5 text-accent animate-pulse" />
+                      <span className="text-sm md:text-base font-bold text-accent uppercase tracking-wider">
+                        Europe's #1 Football Hub
+                      </span>
+                    </div>
+                    <div className="text-xs text-muted-foreground">Trusted by 50k+ fans worldwide</div>
                   </div>
                 </div>
                 
-                <div className="space-y-6">
-                  <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight">
-                    <span className="text-foreground">Ball</span>
-                    <span className="bg-gradient-primary bg-clip-text text-transparent">Hub</span>
+                <div className="space-y-8">
+                  <h1 className="text-5xl md:text-7xl lg:text-8xl font-black leading-none">
+                    <span className="text-foreground animate-fadeIn">Ball</span>
+                    <span className="bg-gradient-accent bg-clip-text text-transparent animate-fadeIn" style={{animationDelay: '0.3s'}}>Hub</span>
+                    <div className="flex items-center gap-3 mt-2">
+                      <div className="text-xl md:text-2xl text-accent font-normal">⚽</div>
+                      <div className="text-lg md:text-xl text-muted-foreground font-light">Live • Predict • Connect</div>
+                    </div>
                   </h1>
                   
-                  <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl">
-                    Your gateway to European football excellence. Follow Premier League, La Liga, Serie A, Bundesliga, and UEFA competitions with live scores, predictions, and expert analysis.
+                  <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed max-w-2xl animate-slideInUp" style={{animationDelay: '0.6s'}}>
+                    Experience football like never before. Real-time scores, AI-powered predictions, and a passionate community of European football enthusiasts.
                   </p>
                   
-                  <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                    <Button asChild size="lg" className="bg-gradient-primary text-lg px-8 py-4 shadow-lg hover:shadow-xl transition-all">
-                      <Link to="/live-scores">🏟️ Live Matches</Link>
+                  <div className="flex flex-col sm:flex-row gap-6 pt-6 animate-slideInUp" style={{animationDelay: '0.9s'}}>
+                    <Button asChild size="lg" className="group bg-gradient-primary text-xl px-10 py-6 shadow-glow hover:shadow-elevated transition-all duration-300 hover:scale-105">
+                      <Link to="/live-scores" className="flex items-center gap-3">
+                        <Play className="w-6 h-6 group-hover:scale-110 transition-transform" />
+                        Watch Live
+                        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                      </Link>
                     </Button>
-                    <Button variant="outline" asChild size="lg" className="text-lg px-8 py-4 border-2">
-                      <Link to="/chat">💬 Join 2.4k Fans</Link>
+                    <Button variant="outline" asChild size="lg" className="text-xl px-10 py-6 border-2 border-primary/30 hover:border-primary hover:bg-primary/10 transition-all duration-300">
+                      <Link to="/chat" className="flex items-center gap-3">
+                        <Users className="w-6 h-6" />
+                        Join Community
+                      </Link>
                     </Button>
                   </div>
-                </div>
-
-                {/* Mobile Stats - Show on mobile/tablet */}
-                <div className="lg:hidden grid grid-cols-2 gap-4 pt-4">
-                  <div className="bg-background/60 backdrop-blur-sm rounded-xl p-4 text-center border border-border/50">
-                    <div className="flex items-center justify-center gap-2 mb-2">
-                      <div className="w-2 h-2 bg-match-live rounded-full animate-pulse"></div>
-                      <span className="text-xl font-bold text-foreground">3</span>
+                  
+                  {/* Trust Indicators */}
+                  <div className="flex items-center gap-8 pt-6 text-sm text-muted-foreground animate-fadeIn" style={{animationDelay: '1.2s'}}>
+                    <div className="flex items-center gap-2">
+                      <Star className="w-4 h-4 text-accent fill-accent" />
+                      <span>4.9/5 Rating</span>
                     </div>
-                    <div className="text-xs text-muted-foreground">Live Now</div>
-                  </div>
-                  <div className="bg-background/60 backdrop-blur-sm rounded-xl p-4 text-center border border-border/50">
-                    <div className="flex items-center justify-center gap-2 mb-2">
-                      <Users className="w-3 h-3 text-primary" />
-                      <span className="text-xl font-bold text-foreground">2.4k</span>
+                    <div className="flex items-center gap-2">
+                      <Zap className="w-4 h-4 text-primary" />
+                      <span>Real-time Updates</span>
                     </div>
-                    <div className="text-xs text-muted-foreground">Active Fans</div>
+                    <div className="flex items-center gap-2">
+                      <Target className="w-4 h-4 text-accent" />
+                      <span>95% Accuracy</span>
+                    </div>
                   </div>
                 </div>
               </div>
               
               {/* Right Side Content - Desktop Only */}
-              <div className="hidden lg:block lg:col-span-5 space-y-6">
-                {/* Premier League Call-to-Action Banner */}
-                <div className="bg-gradient-to-r from-primary/20 to-primary/10 border border-primary/30 rounded-xl p-5 my-[125px] mx-[9px] px-[20px] py-[18px]">
-                  <div className="flex items-center gap-3 mb-3">
-                    <Trophy className="w-6 h-6 text-primary" />
-                    <span className="text-primary font-semibold text-lg">⚽ Premier League</span>
+              <div className="hidden lg:block lg:col-span-5 space-y-8 animate-scaleIn" style={{animationDelay: '0.6s'}}>
+                {/* Live Match Card */}
+                <div className="bg-gradient-card backdrop-blur-sm border border-primary/20 rounded-2xl p-6 shadow-card hover:shadow-elevated transition-all duration-300 hover:scale-105">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-3 h-3 bg-match-live rounded-full animate-pulse"></div>
+                    <span className="text-match-live font-bold text-lg">LIVE NOW</span>
                   </div>
-                  <p className="text-muted-foreground text-sm mb-4 leading-relaxed">
-                    Follow the world's most exciting football league
-                  </p>
-                  <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold w-full">
-                    <Link to="/leagues">View Leagues →</Link>
-                  </Button>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="text-lg font-semibold">Man City</div>
+                      <div className="text-2xl font-bold text-primary">2</div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="text-lg font-semibold">Arsenal</div>
+                      <div className="text-2xl font-bold text-primary">1</div>
+                    </div>
+                    <div className="text-center text-sm text-muted-foreground pt-2 border-t border-border">
+                      Premier League • 87' ⚽
+                    </div>
+                  </div>
                 </div>
 
-                {/* Live Stats Grid */}
-                
+                {/* Stats Grid */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-gradient-card backdrop-blur-sm border border-primary/10 rounded-xl p-4 text-center hover:border-primary/30 transition-colors">
+                    <div className="text-3xl font-bold text-accent mb-1">{statsData.liveNow}</div>
+                    <div className="text-sm text-muted-foreground">Live Matches</div>
+                  </div>
+                  <div className="bg-gradient-card backdrop-blur-sm border border-primary/10 rounded-xl p-4 text-center hover:border-primary/30 transition-colors">
+                    <div className="text-3xl font-bold text-primary mb-1">2.4k</div>
+                    <div className="text-sm text-muted-foreground">Online Fans</div>
+                  </div>
+                </div>
 
-                {/* Featured Match Preview */}
-                
+                {/* Quick Action */}
+                <div className="bg-gradient-to-r from-primary/20 to-accent/20 border border-primary/30 rounded-2xl p-6 hover:scale-105 transition-transform duration-300">
+                  <div className="flex items-center gap-3 mb-4">
+                    <Trophy className="w-8 h-8 text-accent animate-float" />
+                    <span className="text-accent font-bold text-xl">Premier League</span>
+                  </div>
+                  <p className="text-muted-foreground mb-4 leading-relaxed">
+                    Follow every goal, every save, every moment that matters in the world's most exciting league.
+                  </p>
+                  <Button asChild className="w-full bg-gradient-primary hover:bg-gradient-accent transition-all duration-300">
+                    <Link to="/leagues" className="flex items-center justify-center gap-2">
+                      View All Leagues
+                      <ArrowRight className="w-4 h-4" />
+                    </Link>
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
@@ -246,108 +298,172 @@ const Index = () => {
         </div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {quickStats.map((stat, index) => <Card key={index} className="bg-gradient-card border-border text-center">
-              <CardContent className="p-6">
-                <stat.icon className="w-8 h-8 text-primary mx-auto mb-2" />
-                <div className="text-2xl font-bold text-foreground">{stat.value}</div>
-                <div className="text-sm text-muted-foreground">{stat.label}</div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 animate-slideInUp" style={{animationDelay: '0.3s'}}>
+          {quickStats.map((stat, index) => (
+            <Card key={index} className="group bg-gradient-card border border-primary/20 text-center hover:border-primary/40 hover:scale-105 transition-all duration-300 shadow-card hover:shadow-elevated">
+              <CardContent className="p-8">
+                <div className="relative">
+                  <stat.icon className="w-12 h-12 text-primary mx-auto mb-4 group-hover:scale-110 transition-transform duration-300" />
+                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-accent/20 rounded-full animate-pulse"></div>
+                </div>
+                <div className="text-3xl font-black text-foreground mb-2 group-hover:text-primary transition-colors">{stat.value}</div>
+                <div className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">{stat.label}</div>
               </CardContent>
-            </Card>)}
+            </Card>
+          ))}
         </div>
 
         {/* Featured Matches */}
-        <Card className="bg-gradient-card border-border">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Activity className="w-5 h-5 text-primary" />
-              Featured Matches
+        <Card className="bg-gradient-card border border-primary/20 shadow-card hover:shadow-elevated transition-all duration-300 animate-slideInUp" style={{animationDelay: '0.6s'}}>
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center">
+                  <Activity className="w-6 h-6 text-background" />
+                </div>
+                <span className="text-2xl font-bold">Featured Matches</span>
+              </div>
+              <Badge variant="outline" className="border-primary/30 text-primary">
+                Live Updates
+              </Badge>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {loading ? (
-              <div className="text-center py-4 text-muted-foreground">Loading European football matches...</div>
+              <div className="flex items-center justify-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                <span className="ml-3 text-muted-foreground">Loading matches...</span>
+              </div>
             ) : featuredMatches.length > 0 ? (
-              featuredMatches.map((match, index) => <div key={match.id || index} className="flex items-center justify-between p-4 bg-background/50 rounded-lg">
-                <div className="flex items-center gap-4">
-                  <Badge variant={match.status === "live" ? "destructive" : "secondary"} className={match.status === "live" ? "bg-match-live text-white animate-pulse" : "bg-match-upcoming text-background"}>
-                    {match.status?.toUpperCase() || "UPCOMING"}
-                  </Badge>
-                  <div>
-                    <div className="font-medium">
-                      {match.home_team} vs {match.away_team}
-                      {match.status === "live" && match.home_score !== undefined && match.away_score !== undefined && (
-                        <span className="ml-2 text-primary font-bold">
-                          {match.home_score}-{match.away_score}
-                        </span>
-                      )}
+              featuredMatches.map((match, index) => (
+                <div key={match.id || index} className="group flex items-center justify-between p-6 bg-background/30 backdrop-blur-sm rounded-xl border border-primary/10 hover:border-primary/30 hover:bg-background/50 transition-all duration-300">
+                  <div className="flex items-center gap-6">
+                    <Badge 
+                      variant={match.status === "live" ? "destructive" : "secondary"} 
+                      className={match.status === "live" 
+                        ? "bg-match-live text-white animate-pulse-slow border-0 px-3 py-1" 
+                        : "bg-match-upcoming text-background border-0 px-3 py-1"
+                      }
+                    >
+                      {match.status?.toUpperCase() || "UPCOMING"}
+                    </Badge>
+                    <div className="space-y-1">
+                      <div className="font-bold text-lg group-hover:text-primary transition-colors">
+                        {match.home_team} vs {match.away_team}
+                        {match.status === "live" && match.home_score !== undefined && match.away_score !== undefined && (
+                          <span className="ml-3 text-accent font-black text-xl">
+                            {match.home_score}-{match.away_score}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Trophy className="w-4 h-4" />
+                        <span>{match.league}</span>
+                      </div>
                     </div>
-                    <div className="text-sm text-muted-foreground">{match.league}</div>
+                  </div>
+                  <div className="flex items-center gap-3 text-muted-foreground">
+                    <Clock className="w-5 h-5" />
+                    <span className="font-medium">{formatMatchTime(match.start_time, match.match_date)}</span>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Calendar className="w-4 h-4" />
-                  <span>{formatMatchTime(match.start_time, match.match_date)}</span>
-                </div>
-              </div>)
+              ))
             ) : (
-              <div className="text-center py-4 text-muted-foreground">No European football matches available</div>
+              <div className="text-center py-12">
+                <Activity className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" />
+                <div className="text-lg text-muted-foreground">No matches available</div>
+                <div className="text-sm text-muted-foreground/70">Check back soon for updates</div>
+              </div>
             )}
-            <Button asChild variant="outline" className="w-full">
-              <Link to="/live-scores">View All Matches</Link>
+            <Button asChild className="w-full bg-gradient-primary hover:bg-gradient-accent text-lg py-6 group transition-all duration-300">
+              <Link to="/live-scores" className="flex items-center justify-center gap-3">
+                <Play className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                View All Matches
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </Link>
             </Button>
           </CardContent>
         </Card>
 
         {/* Quick Actions */}
-        <div className="grid md:grid-cols-3 gap-6">
-          <Card className="bg-gradient-card border-border hover:border-primary/50 transition-colors">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Newspaper className="w-5 h-5 text-primary" />
-                Latest News
+        <div className="grid md:grid-cols-3 gap-8 animate-slideInUp" style={{animationDelay: '0.9s'}}>
+          <Card className="group bg-gradient-card border border-primary/20 hover:border-primary/40 hover:scale-105 transition-all duration-300 shadow-card hover:shadow-elevated overflow-hidden relative">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-primary/10 rounded-full -translate-y-10 translate-x-10"></div>
+            <CardHeader className="relative">
+              <CardTitle className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-gradient-to-r from-primary/20 to-accent/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Newspaper className="w-6 h-6 text-primary" />
+                </div>
+                <span className="text-xl font-bold">Latest News</span>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground mb-4">
-                Stay updated with the latest European football news and transfer updates.
+            <CardContent className="space-y-4">
+              <p className="text-muted-foreground leading-relaxed">
+                Breaking news, transfer rumors, and exclusive interviews from the world of European football.
               </p>
-              <Button asChild variant="outline" className="w-full">
-                <Link to="/news">Read News</Link>
+              <div className="flex items-center gap-2 text-sm text-accent">
+                <Star className="w-4 h-4 fill-accent" />
+                <span>Updated every minute</span>
+              </div>
+              <Button asChild className="w-full bg-gradient-primary hover:bg-gradient-accent group transition-all duration-300">
+                <Link to="/news" className="flex items-center justify-center gap-2">
+                  Read Latest News
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </Link>
               </Button>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-card border-border hover:border-primary/50 transition-colors">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-primary" />
-                Match Predictions
+          <Card className="group bg-gradient-card border border-primary/20 hover:border-primary/40 hover:scale-105 transition-all duration-300 shadow-card hover:shadow-elevated overflow-hidden relative">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-accent/10 rounded-full -translate-y-10 translate-x-10"></div>
+            <CardHeader className="relative">
+              <CardTitle className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-gradient-to-r from-accent/20 to-primary/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <TrendingUp className="w-6 h-6 text-accent" />
+                </div>
+                <span className="text-xl font-bold">AI Predictions</span>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground mb-4">
-                Get AI-powered match predictions with detailed analysis and betting odds.
+            <CardContent className="space-y-4">
+              <p className="text-muted-foreground leading-relaxed">
+                Advanced machine learning algorithms analyze data to predict match outcomes with 95% accuracy.
               </p>
-              <Button asChild variant="outline" className="w-full">
-                <Link to="/predictions">View Predictions</Link>
+              <div className="flex items-center gap-2 text-sm text-primary">
+                <Target className="w-4 h-4" />
+                <span>95% prediction accuracy</span>
+              </div>
+              <Button asChild className="w-full bg-gradient-accent hover:bg-gradient-primary group transition-all duration-300">
+                <Link to="/predictions" className="flex items-center justify-center gap-2">
+                  View Predictions
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </Link>
               </Button>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-card border-border hover:border-primary/50 transition-colors">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="w-5 h-5 text-primary" />
-                Community Chat
+          <Card className="group bg-gradient-card border border-primary/20 hover:border-primary/40 hover:scale-105 transition-all duration-300 shadow-card hover:shadow-elevated overflow-hidden relative">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-success/10 rounded-full -translate-y-10 translate-x-10"></div>
+            <CardHeader className="relative">
+              <CardTitle className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-gradient-to-r from-primary/20 to-accent/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Users className="w-6 h-6 text-primary" />
+                </div>
+                <span className="text-xl font-bold">Live Community</span>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground mb-4">
-                Connect with fellow football fans and discuss matches in real-time.
+            <CardContent className="space-y-4">
+              <p className="text-muted-foreground leading-relaxed">
+                Join 2.4k passionate football fans discussing live matches, transfers, and predictions.
               </p>
-              <Button asChild variant="outline" className="w-full">
-                <Link to="/chat">Join Chat</Link>
+              <div className="flex items-center gap-2 text-sm text-accent">
+                <div className="w-2 h-2 bg-accent rounded-full animate-pulse"></div>
+                <span>2,431 fans online now</span>
+              </div>
+              <Button asChild className="w-full bg-gradient-primary hover:bg-gradient-accent group transition-all duration-300">
+                <Link to="/chat" className="flex items-center justify-center gap-2">
+                  Join Community
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </Link>
               </Button>
             </CardContent>
           </Card>
