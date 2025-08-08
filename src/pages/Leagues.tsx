@@ -146,7 +146,7 @@ const Leagues = () => {
   };
 
   // Group tables by league and competition
-  const groupedTables = leagueTables.reduce((acc, team) => {
+  const groupedTables = (leagueTables || []).reduce((acc, team) => {
     if (!acc[team.league]) acc[team.league] = [];
     acc[team.league].push(team);
     return acc;
@@ -154,21 +154,22 @@ const Leagues = () => {
 
   // Filter matches by competition
   const getMatchesForCompetition = (competitionName: string) => {
+    if (!matches || !Array.isArray(matches)) return [];
     return matches.filter(match => 
-      match.league.toLowerCase().includes(competitionName.toLowerCase()) ||
+      match.league?.toLowerCase().includes(competitionName.toLowerCase()) ||
       (competitionName === 'Premier League' && match.league === 'Premier League') ||
-      (competitionName === 'La Liga EA SPORTS' && match.league.includes('La Liga')) ||
+      (competitionName === 'La Liga EA SPORTS' && match.league?.includes('La Liga')) ||
       (competitionName === 'Serie A' && match.league === 'Serie A') ||
       (competitionName === 'Bundesliga' && match.league === 'Bundesliga') ||
-      (competitionName === 'UEFA Champions League' && match.league.includes('Champions League')) ||
-      (competitionName === 'UEFA Europa League' && match.league.includes('Europa League') && !match.league.includes('Conference')) ||
-      (competitionName === 'UEFA Europa Conference League' && match.league.includes('Conference League'))
+      (competitionName === 'UEFA Champions League' && match.league?.includes('Champions League')) ||
+      (competitionName === 'UEFA Europa League' && match.league?.includes('Europa League') && !match.league?.includes('Conference')) ||
+      (competitionName === 'UEFA Europa Conference League' && match.league?.includes('Conference League'))
     );
   };
 
   // Set default selected competition
   useEffect(() => {
-    if (competitions.length > 0 && !selectedCompetition) {
+    if (competitions && competitions.length > 0 && !selectedCompetition) {
       setSelectedCompetition(competitions[0].name); // Premier League by default
     }
   }, [competitions, selectedCompetition]);
@@ -224,7 +225,7 @@ const Leagues = () => {
     return '⚽';
   };
 
-  const selectedLeague = selectedCompetition ? groupedTables[selectedCompetition] : [];
+  const selectedLeague = selectedCompetition ? (groupedTables[selectedCompetition] || []) : [];
   const selectedMatches = selectedCompetition ? getMatchesForCompetition(selectedCompetition) : [];
 
   const liveMatchesForCompetition = selectedMatches.filter(match => 
@@ -269,18 +270,18 @@ const Leagues = () => {
         </div>
 
         {/* Live Matches Banner */}
-        {liveMatches.length > 0 && (
+        {liveMatches && liveMatches.length > 0 && (
           <Card className="bg-gradient-to-r from-red-500/10 to-orange-500/10 border-red-500/20">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-red-600">
                 <Circle className="w-3 h-3 fill-red-500 animate-pulse" />
                 <Zap className="w-5 h-5" />
-                {liveMatches.length} Live Matches
+                {liveMatches?.length || 0} Live Matches
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-                {liveMatches.slice(0, 6).map(match => (
+                {(liveMatches || []).slice(0, 6).map(match => (
                   <div key={match.id} className="bg-background/50 rounded-lg p-3 border">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex-1 text-center">
@@ -309,11 +310,11 @@ const Leagues = () => {
         )}
 
         {/* Competition Selection */}
-        {competitions.length > 0 && (
+        {competitions && competitions.length > 0 && (
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Select Competition</h3>
             <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-4">
-              {competitions.map(competition => (
+              {(competitions || []).map(competition => (
                 <Button
                   key={competition.id}
                   variant={selectedCompetition === competition.name ? "default" : "outline"}
