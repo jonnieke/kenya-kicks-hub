@@ -25,7 +25,6 @@ interface QuickStat {
   value: string | number;
   icon: any;
 }
-
 interface StatsData {
   matchesToday: number;
   liveNow: number;
@@ -39,62 +38,52 @@ const Index = () => {
     liveNow: 0,
     predictions: 0
   });
-
-  const quickStats: QuickStat[] = [
-    {
-      label: "Matches Today",
-      value: statsData.matchesToday,
-      icon: Activity
-    },
-    {
-      label: "Live Now", 
-      value: statsData.liveNow,
-      icon: Clock
-    },
-    {
-      label: "Active Users",
-      value: "2.4k", // Keep static for now
-      icon: Users
-    },
-    {
-      label: "Predictions Made",
-      value: statsData.predictions,
-      icon: TrendingUp
-    }
-  ];
-
+  const quickStats: QuickStat[] = [{
+    label: "Matches Today",
+    value: statsData.matchesToday,
+    icon: Activity
+  }, {
+    label: "Live Now",
+    value: statsData.liveNow,
+    icon: Clock
+  }, {
+    label: "Active Users",
+    value: "2.4k",
+    // Keep static for now
+    icon: Users
+  }, {
+    label: "Predictions Made",
+    value: statsData.predictions,
+    icon: TrendingUp
+  }];
   useEffect(() => {
     const fetchCurrentMatches = async () => {
       try {
         // Get current time in +3 GMT (EAT - East Africa Time)
         const now = new Date();
-        const eatTime = new Date(now.getTime() + (3 * 60 * 60 * 1000)); // Add 3 hours
+        const eatTime = new Date(now.getTime() + 3 * 60 * 60 * 1000); // Add 3 hours
         const today = eatTime.toISOString().split('T')[0];
         const currentDateTime = eatTime.toISOString();
-        
-        const { data, error } = await supabase
-          .from('matches')
-          .select('*')
-          .or(`status.in.(live,1H,2H,HT),status.eq.upcoming,start_time.gte.${currentDateTime}`)
-          .order('start_time', { ascending: true })
-          .limit(5);
-
+        const {
+          data,
+          error
+        } = await supabase.from('matches').select('*').or(`status.in.(live,1H,2H,HT),status.eq.upcoming,start_time.gte.${currentDateTime}`).order('start_time', {
+          ascending: true
+        }).limit(5);
         if (error) {
           console.error('Error fetching current matches:', error);
           return;
         }
-
         if (data) {
           // Filter out matches that are more than 2 hours old to avoid showing stale upcoming matches
           const filteredMatches = data.filter(match => {
             const matchTime = new Date(match.start_time);
             const timeDiff = eatTime.getTime() - matchTime.getTime();
             const twoHoursInMs = 2 * 60 * 60 * 1000;
-            
+
             // Keep live matches and upcoming matches within reasonable time window
             return ['live', '1H', '2H', 'HT'].includes(match.status?.toLowerCase()) || timeDiff < twoHoursInMs;
           });
-          
           setFeaturedMatches(filteredMatches);
         }
       } catch (error) {
@@ -103,34 +92,38 @@ const Index = () => {
         setLoading(false);
       }
     };
-
     const fetchStats = async () => {
       try {
         // Get current time in +3 GMT (EAT - East Africa Time)
         const now = new Date();
-        const eatTime = new Date(now.getTime() + (3 * 60 * 60 * 1000));
+        const eatTime = new Date(now.getTime() + 3 * 60 * 60 * 1000);
         const today = eatTime.toISOString().split('T')[0];
         const todayStart = `${today}T00:00:00`;
         const todayEnd = `${today}T23:59:59`;
-        
+
         // Count matches today (using EAT timezone)
-        const { count: matchesToday } = await supabase
-          .from('matches')
-          .select('*', { count: 'exact', head: true })
-          .gte('start_time', todayStart)
-          .lt('start_time', todayEnd);
+        const {
+          count: matchesToday
+        } = await supabase.from('matches').select('*', {
+          count: 'exact',
+          head: true
+        }).gte('start_time', todayStart).lt('start_time', todayEnd);
 
         // Count live matches
-        const { count: liveNow } = await supabase
-          .from('matches')
-          .select('*', { count: 'exact', head: true })
-          .in('status', ['live', '1H', '2H', 'HT']);
+        const {
+          count: liveNow
+        } = await supabase.from('matches').select('*', {
+          count: 'exact',
+          head: true
+        }).in('status', ['live', '1H', '2H', 'HT']);
 
         // Count total predictions
-        const { count: predictions } = await supabase
-          .from('predictions')
-          .select('*', { count: 'exact', head: true });
-
+        const {
+          count: predictions
+        } = await supabase.from('predictions').select('*', {
+          count: 'exact',
+          head: true
+        });
         setStatsData({
           matchesToday: matchesToday || 0,
           liveNow: liveNow || 0,
@@ -140,34 +133,38 @@ const Index = () => {
         console.error('Error fetching stats:', error);
       }
     };
-
     fetchCurrentMatches();
     fetchStats();
   }, []);
-
   const formatMatchTime = (startTime: string, matchDate: string) => {
     if (startTime) {
-      return new Date(startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      return new Date(startTime).toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
     }
     return new Date(matchDate).toLocaleDateString();
   };
-
   return <div className="min-h-screen bg-gradient-hero relative overflow-hidden">
       <AffiliateRedirect />
       
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-20 left-10 w-64 h-64 bg-primary/5 rounded-full blur-3xl animate-float"></div>
-        <div className="absolute top-40 right-20 w-48 h-48 bg-accent/5 rounded-full blur-2xl animate-float" style={{animationDelay: '1s'}}></div>
-        <div className="absolute bottom-20 left-1/3 w-72 h-72 bg-primary/3 rounded-full blur-3xl animate-float" style={{animationDelay: '2s'}}></div>
+        <div className="absolute top-40 right-20 w-48 h-48 bg-accent/5 rounded-full blur-2xl animate-float" style={{
+        animationDelay: '1s'
+      }}></div>
+        <div className="absolute bottom-20 left-1/3 w-72 h-72 bg-primary/3 rounded-full blur-3xl animate-float" style={{
+        animationDelay: '2s'
+      }}></div>
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 py-8 space-y-12">
         {/* Hero Section */}
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary/10 via-background/40 to-accent/5 backdrop-blur-sm border border-primary/20 shadow-elevated">
           <div className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20" style={{
-            backgroundImage: `url(${heroImage})`
-          }} />
+          backgroundImage: `url(${heroImage})`
+        }} />
           
           <div className="relative z-20 p-8 md:p-12 lg:p-16">
             <div className="grid lg:grid-cols-12 gap-12 items-center">
@@ -191,18 +188,24 @@ const Index = () => {
                 <div className="space-y-8">
                   <h1 className="text-5xl md:text-7xl lg:text-8xl font-black leading-none">
                     <span className="text-foreground animate-fadeIn">Ball</span>
-                    <span className="bg-gradient-accent bg-clip-text text-transparent animate-fadeIn" style={{animationDelay: '0.3s'}}>Hub</span>
+                    <span className="bg-gradient-accent bg-clip-text text-transparent animate-fadeIn" style={{
+                    animationDelay: '0.3s'
+                  }}>Mtaani</span>
                     <div className="flex items-center gap-3 mt-2">
                       <div className="text-xl md:text-2xl text-accent font-normal">⚽</div>
                       <div className="text-lg md:text-xl text-muted-foreground font-light">Live • Predict • Connect</div>
                     </div>
                   </h1>
                   
-                  <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed max-w-2xl animate-slideInUp" style={{animationDelay: '0.6s'}}>
+                  <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed max-w-2xl animate-slideInUp" style={{
+                  animationDelay: '0.6s'
+                }}>
                     Experience football like never before. Real-time scores, AI-powered predictions, and a passionate community of European football enthusiasts.
                   </p>
                   
-                  <div className="flex flex-col sm:flex-row gap-6 pt-6 animate-slideInUp" style={{animationDelay: '0.9s'}}>
+                  <div className="flex flex-col sm:flex-row gap-6 pt-6 animate-slideInUp" style={{
+                  animationDelay: '0.9s'
+                }}>
                     <Button asChild size="lg" className="group bg-gradient-primary text-xl px-10 py-6 shadow-glow hover:shadow-elevated transition-all duration-300 hover:scale-105">
                       <Link to="/live-scores" className="flex items-center gap-3">
                         <Play className="w-6 h-6 group-hover:scale-110 transition-transform" />
@@ -219,7 +222,9 @@ const Index = () => {
                   </div>
                   
                   {/* Trust Indicators */}
-                  <div className="flex items-center gap-8 pt-6 text-sm text-muted-foreground animate-fadeIn" style={{animationDelay: '1.2s'}}>
+                  <div className="flex items-center gap-8 pt-6 text-sm text-muted-foreground animate-fadeIn" style={{
+                  animationDelay: '1.2s'
+                }}>
                     <div className="flex items-center gap-2">
                       <Star className="w-4 h-4 text-accent fill-accent" />
                       <span>4.9/5 Rating</span>
@@ -237,7 +242,9 @@ const Index = () => {
               </div>
               
               {/* Right Side Content - Desktop Only */}
-              <div className="hidden lg:block lg:col-span-5 space-y-8 animate-scaleIn" style={{animationDelay: '0.6s'}}>
+              <div className="hidden lg:block lg:col-span-5 space-y-8 animate-scaleIn" style={{
+              animationDelay: '0.6s'
+            }}>
                 {/* Live Match Card */}
                 <div className="bg-gradient-card backdrop-blur-sm border border-primary/20 rounded-2xl p-6 shadow-card hover:shadow-elevated transition-all duration-300 hover:scale-105">
                   <div className="flex items-center gap-3 mb-4">
@@ -298,9 +305,10 @@ const Index = () => {
         </div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 animate-slideInUp" style={{animationDelay: '0.3s'}}>
-          {quickStats.map((stat, index) => (
-            <Card key={index} className="group bg-gradient-card border border-primary/20 text-center hover:border-primary/40 hover:scale-105 transition-all duration-300 shadow-card hover:shadow-elevated">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 animate-slideInUp" style={{
+        animationDelay: '0.3s'
+      }}>
+          {quickStats.map((stat, index) => <Card key={index} className="group bg-gradient-card border border-primary/20 text-center hover:border-primary/40 hover:scale-105 transition-all duration-300 shadow-card hover:shadow-elevated">
               <CardContent className="p-8">
                 <div className="relative">
                   <stat.icon className="w-12 h-12 text-primary mx-auto mb-4 group-hover:scale-110 transition-transform duration-300" />
@@ -309,12 +317,13 @@ const Index = () => {
                 <div className="text-3xl font-black text-foreground mb-2 group-hover:text-primary transition-colors">{stat.value}</div>
                 <div className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">{stat.label}</div>
               </CardContent>
-            </Card>
-          ))}
+            </Card>)}
         </div>
 
         {/* Featured Matches */}
-        <Card className="bg-gradient-card border border-primary/20 shadow-card hover:shadow-elevated transition-all duration-300 animate-slideInUp" style={{animationDelay: '0.6s'}}>
+        <Card className="bg-gradient-card border border-primary/20 shadow-card hover:shadow-elevated transition-all duration-300 animate-slideInUp" style={{
+        animationDelay: '0.6s'
+      }}>
           <CardHeader className="pb-4">
             <CardTitle className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -329,32 +338,20 @@ const Index = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {loading ? (
-              <div className="flex items-center justify-center py-12">
+            {loading ? <div className="flex items-center justify-center py-12">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                 <span className="ml-3 text-muted-foreground">Loading matches...</span>
-              </div>
-            ) : featuredMatches.length > 0 ? (
-              featuredMatches.map((match, index) => (
-                <div key={match.id || index} className="group flex items-center justify-between p-6 bg-background/30 backdrop-blur-sm rounded-xl border border-primary/10 hover:border-primary/30 hover:bg-background/50 transition-all duration-300">
+              </div> : featuredMatches.length > 0 ? featuredMatches.map((match, index) => <div key={match.id || index} className="group flex items-center justify-between p-6 bg-background/30 backdrop-blur-sm rounded-xl border border-primary/10 hover:border-primary/30 hover:bg-background/50 transition-all duration-300">
                   <div className="flex items-center gap-6">
-                    <Badge 
-                      variant={match.status === "live" ? "destructive" : "secondary"} 
-                      className={match.status === "live" 
-                        ? "bg-match-live text-white animate-pulse-slow border-0 px-3 py-1" 
-                        : "bg-match-upcoming text-background border-0 px-3 py-1"
-                      }
-                    >
+                    <Badge variant={match.status === "live" ? "destructive" : "secondary"} className={match.status === "live" ? "bg-match-live text-white animate-pulse-slow border-0 px-3 py-1" : "bg-match-upcoming text-background border-0 px-3 py-1"}>
                       {match.status?.toUpperCase() || "UPCOMING"}
                     </Badge>
                     <div className="space-y-1">
                       <div className="font-bold text-lg group-hover:text-primary transition-colors">
                         {match.home_team} vs {match.away_team}
-                        {match.status === "live" && match.home_score !== undefined && match.away_score !== undefined && (
-                          <span className="ml-3 text-accent font-black text-xl">
+                        {match.status === "live" && match.home_score !== undefined && match.away_score !== undefined && <span className="ml-3 text-accent font-black text-xl">
                             {match.home_score}-{match.away_score}
-                          </span>
-                        )}
+                          </span>}
                       </div>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Trophy className="w-4 h-4" />
@@ -366,15 +363,11 @@ const Index = () => {
                     <Clock className="w-5 h-5" />
                     <span className="font-medium">{formatMatchTime(match.start_time, match.match_date)}</span>
                   </div>
-                </div>
-              ))
-            ) : (
-              <div className="text-center py-12">
+                </div>) : <div className="text-center py-12">
                 <Activity className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" />
                 <div className="text-lg text-muted-foreground">No matches available</div>
                 <div className="text-sm text-muted-foreground/70">Check back soon for updates</div>
-              </div>
-            )}
+              </div>}
             <Button asChild className="w-full bg-gradient-primary hover:bg-gradient-accent text-lg py-6 group transition-all duration-300">
               <Link to="/live-scores" className="flex items-center justify-center gap-3">
                 <Play className="w-5 h-5 group-hover:scale-110 transition-transform" />
@@ -386,7 +379,9 @@ const Index = () => {
         </Card>
 
         {/* Quick Actions */}
-        <div className="grid md:grid-cols-3 gap-8 animate-slideInUp" style={{animationDelay: '0.9s'}}>
+        <div className="grid md:grid-cols-3 gap-8 animate-slideInUp" style={{
+        animationDelay: '0.9s'
+      }}>
           <Card className="group bg-gradient-card border border-primary/20 hover:border-primary/40 hover:scale-105 transition-all duration-300 shadow-card hover:shadow-elevated overflow-hidden relative">
             <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-primary/10 rounded-full -translate-y-10 translate-x-10"></div>
             <CardHeader className="relative">
