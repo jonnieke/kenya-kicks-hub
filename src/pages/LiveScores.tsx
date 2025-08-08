@@ -1,15 +1,20 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Clock, Calendar, RefreshCw, Trophy, Target, Timer, Play, Users } from "lucide-react";
+import { Clock, Calendar, RefreshCw, Trophy, Target, Timer, Play, Users, Filter, X } from "lucide-react";
 import { SidebarAd, BannerAd } from "@/components/AdSense";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useQuery } from "@tanstack/react-query";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { format } from "date-fns";
 interface Match {
   id: string;
   home_team: string;
@@ -50,6 +55,13 @@ interface MatchDetails extends Match {
 const LiveScores = () => {
   const [selectedMatch, setSelectedMatch] = useState<MatchDetails | null>(null);
   const [activeTab, setActiveTab] = useState("live");
+  
+  // Filter states
+  const [selectedLeague, setSelectedLeague] = useState<string>("all");
+  const [selectedTeam, setSelectedTeam] = useState<string>("all");
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
 
   // Fetch matches with real-time updates - prioritize CHAN
   const {
@@ -146,14 +158,78 @@ const LiveScores = () => {
     };
   }, [refetchMatches, refetchTables]);
 
+  // Get unique leagues and teams for filter options
+  const uniqueLeagues = useMemo(() => {
+    const leagues = [...new Set(matches.map(match => match.league))];
+    return leagues.sort();
+  }, [matches]);
+
+  const uniqueTeams = useMemo(() => {
+    const teams = new Set<string>();
+    matches.forEach(match => {
+      teams.add(match.home_team);
+      teams.add(match.away_team);
+    });
+    return [...teams].sort();
+  }, [matches]);
+
+  // Apply filters
+  const filteredMatches = useMemo(() => {
+    return matches.filter(match => {
+      // League filter
+      if (selectedLeague !== "all" && match.league !== selectedLeague) {
+        return false;
+      }
+      
+      // Team filter
+      if (selectedTeam !== "all" && 
+          !match.home_team.includes(selectedTeam) && 
+          !match.away_team.includes(selectedTeam)) {
+        return false;
+      }
+      
+      // Date filter
+      if (selectedDate) {
+        const matchDate = new Date(match.start_time);
+        const filterDate = new Date(selectedDate);
+        if (matchDate.toDateString() !== filterDate.toDateString()) {
+          return false;
+        }
+      }
+      
+      // Search term filter
+      if (searchTerm) {
+        const searchLower = searchTerm.toLowerCase();
+        return (
+          match.home_team.toLowerCase().includes(searchLower) ||
+          match.away_team.toLowerCase().includes(searchLower) ||
+          match.league.toLowerCase().includes(searchLower)
+        );
+      }
+      
+      return true;
+    });
+  }, [matches, selectedLeague, selectedTeam, selectedDate, searchTerm]);
+
   // Filter matches by status with better categorization
-  const liveMatches = matches
+  const liveMatches = filteredMatches
     .filter(match => ['LIVE', '1H', '2H', 'HT'].includes(match.status))
     .sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime()); // Latest on top
-  const upcomingMatches = matches
+  const upcomingMatches = filteredMatches
     .filter(match => ['UPCOMING', 'TIMED', 'NS'].includes(match.status))
     .sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime()); // Latest on top
-  const recentResults = matches.filter(match => ['FT', 'FINISHED'].includes(match.status));
+  const recentResults = filteredMatches.filter(match => ['FT', 'FINISHED'].includes(match.status));
+
+  // Clear all filters
+  const clearFilters = () => {
+    setSelectedLeague("all");
+    setSelectedTeam("all");
+    setSelectedDate(undefined);
+    setSearchTerm("");
+  };
+
+  // Check if any filters are active
+  const hasActiveFilters = selectedLeague !== "all" || selectedTeam !== "all" || selectedDate || searchTerm;
 
   // Group league tables by league
   const groupedTables = leagueTables.reduce((acc, team) => {
@@ -315,6 +391,131 @@ const LiveScores = () => {
             </Button>
           </div>
         </div>
+
+        {/* Filters Section */}
+        <Card className="bg-gradient-card border-border">
+          <CardHeader className="pb-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Filter className="w-5 h-5 text-primary" />
+                <h2 className="text-lg font-semibold">Filters</h2>
+                {hasActiveFilters && (
+                  <Badge variant="secondary" className="ml-2">
+                    {[
+                      selectedLeague !== "all" ? "League" : "",
+                      selectedTeam !== "all" ? "Team" : "",
+                      selectedDate ? "Date" : "",
+                      searchTerm ? "Search" : ""
+                    ].filter(Boolean).length} active
+                  </Badge>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                {hasActiveFilters && (
+                  <Button variant="outline" size="sm" onClick={clearFilters}>
+                    <X className="w-4 h-4 mr-1" />
+                    Clear
+                  </Button>
+                )}
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="md:hidden"
+                >
+                  <Filter className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className={`${showFilters ? 'block' : 'hidden md:block'}`}>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Search Input */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-muted-foreground">Search</label>
+                <Input
+                  placeholder="Search teams or leagues..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="bg-background"
+                />
+              </div>
+
+              {/* League Filter */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-muted-foreground">League</label>
+                <Select value={selectedLeague} onValueChange={setSelectedLeague}>
+                  <SelectTrigger className="bg-background">
+                    <SelectValue placeholder="All leagues" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover">
+                    <SelectItem value="all">All leagues</SelectItem>
+                    {uniqueLeagues.map(league => (
+                      <SelectItem key={league} value={league}>
+                        {league}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Team Filter */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-muted-foreground">Team</label>
+                <Select value={selectedTeam} onValueChange={setSelectedTeam}>
+                  <SelectTrigger className="bg-background">
+                    <SelectValue placeholder="All teams" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover max-h-72">
+                    <SelectItem value="all">All teams</SelectItem>
+                    {uniqueTeams.map(team => (
+                      <SelectItem key={team} value={team}>
+                        {team}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Date Filter */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-muted-foreground">Date</label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start text-left font-normal bg-background"
+                    >
+                      <Calendar className="mr-2 h-4 w-4" />
+                      {selectedDate ? format(selectedDate, "PPP") : "All dates"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 bg-popover" align="start">
+                    <CalendarComponent
+                      mode="single"
+                      selected={selectedDate}
+                      onSelect={setSelectedDate}
+                      initialFocus
+                      className="pointer-events-auto"
+                    />
+                    {selectedDate && (
+                      <div className="p-3 border-t">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => setSelectedDate(undefined)}
+                          className="w-full"
+                        >
+                          Clear date
+                        </Button>
+                      </div>
+                    )}
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Top Banner Ad */}
         <div className="flex justify-center">
