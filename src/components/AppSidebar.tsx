@@ -86,7 +86,7 @@ export function AppSidebar() {
             </div>
             {!isCollapsed && <div>
                 <h2 className="font-bold text-lg text-sidebar-foreground">BallMtaani</h2>
-                <p className="text-xs text-sidebar-foreground/60">European Football Hub</p>
+                <p className="text-xs text-sidebar-foreground/60">Fan Football Hub</p>
               </div>}
           </div>
         </div>
