@@ -9,6 +9,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { DiscussionForum } from "@/components/DiscussionForum";
 import { PollsAndVotes } from "@/components/PollsAndVotes";
 import { ProfileManager } from "@/components/ProfileManager";
+import { FootballGames } from "@/components/FootballGames";
+import { FootballQuotesAndMemes } from "@/components/FootballQuotesAndMemes";
+import { CommunityChallenges } from "@/components/CommunityChallenges";
 import { 
   Users, 
   MessageCircle, 
@@ -18,7 +21,10 @@ import {
   Calendar,
   Trophy,
   Star,
-  Send
+  Send,
+  Gamepad2,
+  Quote,
+  Target
 } from "lucide-react";
 
 const Community = () => {
@@ -115,10 +121,13 @@ const Community = () => {
           {/* Main Content */}
           <div className="lg:col-span-3 space-y-6">
             <Tabs defaultValue="feed" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-6">
                 <TabsTrigger value="feed">Community Feed</TabsTrigger>
                 <TabsTrigger value="discussions">Discussions</TabsTrigger>
                 <TabsTrigger value="polls">Polls & Votes</TabsTrigger>
+                <TabsTrigger value="games">🎮 Games</TabsTrigger>
+                <TabsTrigger value="quotes">💬 Quotes</TabsTrigger>
+                <TabsTrigger value="challenges">🏆 Challenges</TabsTrigger>
               </TabsList>
 
               <TabsContent value="feed" className="space-y-6">
@@ -202,6 +211,18 @@ const Community = () => {
 
               <TabsContent value="polls" className="space-y-4">
                 <PollsAndVotes />
+              </TabsContent>
+              
+              <TabsContent value="games" className="space-y-4">
+                <FootballGames />
+              </TabsContent>
+              
+              <TabsContent value="quotes" className="space-y-4">
+                <FootballQuotesAndMemes />
+              </TabsContent>
+              
+              <TabsContent value="challenges" className="space-y-4">
+                <CommunityChallenges />
               </TabsContent>
             </Tabs>
           </div>

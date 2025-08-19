@@ -1,14 +1,51 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://ballmtaani.com/sitemap.xml
+
+# Disallow admin and sensitive areas
+Disallow: /admin/
+Disallow: /api/
+Disallow: /_supabase/
+Disallow: /src/
+Disallow: /node_modules/
+Disallow: /.env
+Disallow: /.git/
+
+# Allow important pages and assets
+Allow: /live-scores/
+Allow: /predictions/
+Allow: /news/
+Allow: /community/
+Allow: /affiliates/
+Allow: /assets/
+Allow: /favicon.ico
+Allow: /robots.txt
+Allow: /sitemap.xml
+
+# Crawl delay (optional - be respectful to server)
+Crawl-delay: 1
+
+# Specific rules for major search engines
 User-agent: Googlebot
 Allow: /
+Crawl-delay: 1
 
 User-agent: Bingbot
 Allow: /
+Crawl-delay: 1
 
-User-agent: Twitterbot
+User-agent: Slurp
 Allow: /
+Crawl-delay: 1
 
-User-agent: facebookexternalhit
-Allow: /
+# Block bad bots
+User-agent: AhrefsBot
+Disallow: /
 
-User-agent: *
-Allow: /
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Newspaper, TrendingUp, Clock, Trophy, Globe, Star } from "lucide-react";
@@ -322,15 +323,31 @@ const News = () => {
               </CardContent>
             </Card>
 
-            {/* Scraped News */}
-            <Card>
-              <CardHeader>
-                <CardTitle>External News Feed</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <NewsScraper />
-              </CardContent>
-            </Card>
+                    {/* Enhanced News Aggregator */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Multi-Source News</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-4">
+              News from multiple sources including BBC Sport, ESPN, Goal.com, and CAF Media
+            </p>
+            {/* Replace this with EnhancedNewsAggregator when you have API keys */}
+            <div className="text-center py-8">
+              <Newspaper className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+              <h3 className="text-lg font-semibold mb-2">News Aggregator Ready</h3>
+              <p className="text-muted-foreground mb-4">
+                Get free API keys to enable multi-source news aggregation
+              </p>
+              <Button variant="outline" asChild>
+                <a href="/news-setup" className="gap-2">
+                  <Globe className="w-4 h-4" />
+                  Setup Guide
+                </a>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
           </div>
         </div>
 

@@ -2,10 +2,12 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminMatchManager } from "@/components/AdminMatchManager";
 import AdminNewsManager from "@/components/AdminNewsManager";
+import AdminBannerManager from "@/components/AdminBannerManager";
+import AdminAffiliateManager from "@/components/AdminAffiliateManager";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Shield, Users, Activity, TrendingUp, Newspaper } from "lucide-react";
+import { Shield, Users, Activity, TrendingUp, Newspaper, Image, DollarSign } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface UserRole {
@@ -22,7 +24,9 @@ const Admin = () => {
     totalUsers: 0,
     activeAffiliates: 0,
     totalArticles: 0,
-    publishedArticles: 0
+    publishedArticles: 0,
+    totalBanners: 0,
+    activeBanners: 0
   });
 
   useEffect(() => {
@@ -101,13 +105,23 @@ const Admin = () => {
       const totalArticles = articlesData?.length || 0;
       const publishedArticles = articlesData?.filter(article => article.is_published).length || 0;
 
+      // Fetch banners stats
+      const { data: bannersData } = await supabase
+        .from('banners')
+        .select('is_active');
+
+      const totalBanners = bannersData?.length || 0;
+      const activeBanners = bannersData?.filter(banner => banner.is_active).length || 0;
+
       setStats({
         totalMatches,
         liveMatches,
         totalUsers: usersCount || 0,
         activeAffiliates: affiliatesCount || 0,
         totalArticles,
-        publishedArticles
+        publishedArticles,
+        totalBanners,
+        activeBanners
       });
     } catch (error) {
       console.error('Error fetching stats:', error);
@@ -155,12 +169,12 @@ const Admin = () => {
           </div>
           <div>
             <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-            <p className="text-muted-foreground">Manage matches and system settings</p>
+            <p className="text-muted-foreground">Manage matches, news, banners, affiliates, and system settings</p>
           </div>
         </div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Card>
             <CardContent className="p-4 text-center">
               <Activity className="w-6 h-6 text-primary mx-auto mb-2" />
@@ -212,6 +226,24 @@ const Admin = () => {
               <div className="text-sm text-muted-foreground">Published</div>
             </CardContent>
           </Card>
+
+          <Card>
+            <CardContent className="p-4 text-center">
+              <Image className="w-6 h-6 text-primary mx-auto mb-2" />
+              <div className="text-2xl font-bold">{stats.totalBanners}</div>
+              <div className="text-sm text-muted-foreground">Total Banners</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4 text-center">
+              <div className="w-6 h-6 mx-auto mb-2">
+                <div className="w-2 h-2 bg-blue-500 rounded-full mx-auto"></div>
+              </div>
+              <div className="text-2xl font-bold">{stats.activeBanners}</div>
+              <div className="text-sm text-muted-foreground">Active Banners</div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Admin Status Badge */}
@@ -224,9 +256,11 @@ const Admin = () => {
 
         {/* Main Content */}
         <Tabs defaultValue="matches" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="matches">Match Management</TabsTrigger>
             <TabsTrigger value="news">News Management</TabsTrigger>
+            <TabsTrigger value="banners">Banner Management</TabsTrigger>
+            <TabsTrigger value="affiliates">Affiliate Management</TabsTrigger>
           </TabsList>
           
           <TabsContent value="matches" className="mt-6">
@@ -235,6 +269,14 @@ const Admin = () => {
           
           <TabsContent value="news" className="mt-6">
             <AdminNewsManager />
+          </TabsContent>
+
+          <TabsContent value="banners" className="mt-6">
+            <AdminBannerManager />
+          </TabsContent>
+
+          <TabsContent value="affiliates" className="mt-6">
+            <AdminAffiliateManager />
           </TabsContent>
         </Tabs>
         

@@ -1,9 +1,12 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Clock, Calendar, RefreshCw, Trophy, Target, Timer, Play, Users, Filter, X } from "lucide-react";
+import { Clock, Calendar, RefreshCw, Trophy, Target, Timer, Play, Users, Filter, X, ChevronDown, Vibrate, Share2 } from "lucide-react";
 import { SidebarAd, BannerAd } from "@/components/AdSense";
+import { LiveOddsWidget, LiveMatchWidget } from "@/components/OddspediaWidget";
+import { EnhancedMatchCard } from "@/components/EnhancedMatchCard";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo, useRef } from "react";
+import { motion, useMotionValue, useTransform, PanInfo } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -55,6 +58,13 @@ interface MatchDetails extends Match {
 const LiveScores = () => {
   const [selectedMatch, setSelectedMatch] = useState<MatchDetails | null>(null);
   const [activeTab, setActiveTab] = useState("live");
+  
+  // Pull-to-refresh functionality
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const pullToRefreshRef = useRef<HTMLDivElement>(null);
+  const y = useMotionValue(0);
+  const pullProgress = useTransform(y, [0, 100], [0, 1]);
+  const refreshOpacity = useTransform(y, [0, 50, 100], [0, 0.5, 1]);
   
   // Filter states
   const [selectedLeague, setSelectedLeague] = useState<string>("all");
@@ -132,7 +142,7 @@ const LiveScores = () => {
     refetchInterval: 120000 // Refresh tables every 2 minutes to reduce blinking
   });
 
-  // Set up real-time subscriptions
+  // Set up real-time subscriptions with better error handling
   useEffect(() => {
     const matchesChannel = supabase.channel('matches-changes').on('postgres_changes', {
       event: '*',
@@ -142,16 +152,30 @@ const LiveScores = () => {
       console.log('Match update:', payload);
       refetchMatches();
       if (payload.eventType === 'UPDATE' && payload.new) {
-        toast.success(`Match updated: ${payload.new.home_team} vs ${payload.new.away_team}`);
+        const match = payload.new as Match;
+        toast.success(`⚽ ${match.home_team} ${match.home_score} - ${match.away_score} ${match.away_team}`, {
+          description: `Match updated in ${match.league}`,
+          duration: 5000,
+        });
       }
-    }).subscribe();
+    }).subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+        console.log('Real-time matches subscription active');
+      }
+    });
+
     const tablesChannel = supabase.channel('tables-changes').on('postgres_changes', {
       event: '*',
       schema: 'public',
       table: 'league_tables'
     }, () => {
       refetchTables();
-    }).subscribe();
+    }).subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+        console.log('Real-time tables subscription active');
+      }
+    });
+
     return () => {
       supabase.removeChannel(matchesChannel);
       supabase.removeChannel(tablesChannel);
@@ -266,108 +290,67 @@ const LiveScores = () => {
       toast.error('Failed to scrape CAF matches');
     }
   };
-  const MatchCard = ({
-    match,
-    showAnimation = false
-  }: {
-    match: Match;
-    showAnimation?: boolean;
-  }) => {
-    const isLive = ['LIVE', '1H', '2H', 'HT'].includes(match.status);
-    const isFinished = ['FT', 'FINISHED'].includes(match.status);
+
+  // Pull-to-refresh handlers with haptic feedback
+  const handlePullToRefresh = useCallback(async () => {
+    if (isRefreshing) return;
     
-    return (
-      <Card 
-        key={match.id} 
-        className={`transition-all cursor-pointer duration-300 hover:shadow-lg ${
-          isLive 
-            ? 'bg-gradient-to-r from-red-500/10 to-orange-500/10 border-red-500/30 shadow-md' 
-            : 'bg-gradient-card border-border hover:border-primary/50'
-        } ${showAnimation ? 'animate-pulse' : ''}`} 
-        onClick={() => handleMatchClick(match)}
+    setIsRefreshing(true);
+    
+    // Add haptic feedback on mobile
+    if (navigator.vibrate) {
+      navigator.vibrate([50, 30, 50]); // Pattern: vibrate-pause-vibrate
+    }
+    
+    try {
+      await Promise.all([
+        refetchMatches(),
+        refetchTables()
+      ]);
+      
+      toast.success("✅ Matches refreshed!");
+    } catch (error) {
+      toast.error("Failed to refresh matches");
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [isRefreshing, refetchMatches, refetchTables]);
+
+  const handlePanEnd = useCallback((event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    if (info.offset.y > 100 && !isRefreshing) {
+      handlePullToRefresh();
+    }
+    y.set(0);
+  }, [handlePullToRefresh, isRefreshing, y]);
+
+  return (
+    <motion.div 
+      className="min-h-screen bg-background p-6"
+      ref={pullToRefreshRef}
+      drag="y"
+      dragConstraints={{ top: 0, bottom: 0 }}
+      dragElastic={{ top: 0.2, bottom: 0 }}
+      onPanEnd={handlePanEnd}
+      style={{ y }}
+    >
+      {/* Pull to refresh indicator */}
+      <motion.div
+        className="fixed top-16 left-1/2 transform -translate-x-1/2 z-50 bg-primary text-primary-foreground px-4 py-2 rounded-full shadow-lg"
+        style={{ 
+          opacity: refreshOpacity,
+          scale: pullProgress
+        }}
+        initial={{ y: -50 }}
+        animate={{ y: isRefreshing ? 0 : -50 }}
       >
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
-              <Trophy className="w-3 h-3" />
-              {match.league}
-            </CardTitle>
-            <div className="flex items-center gap-2">
-              {match.venue && <span className="text-xs text-muted-foreground">📍 {match.venue}</span>}
-              <Badge 
-                variant={isLive ? "destructive" : isFinished ? "secondary" : "default"} 
-                className={`${
-                  isLive 
-                    ? "bg-red-500 text-white animate-pulse" 
-                    : isFinished 
-                      ? "bg-gray-500 text-white" 
-                      : "bg-blue-500 text-white"
-                }`}
-              >
-                {isLive ? (
-                  <div className="flex items-center gap-1">
-                    <span className="w-2 h-2 bg-white rounded-full animate-ping"></span>
-                    {match.status === 'LIVE' ? `LIVE ${match.minute || ''}` : match.status}
-                  </div>
-                ) : match.status}
-              </Badge>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between">
-            <div className="flex-1 text-center">
-              <h3 className={`font-semibold text-lg ${isLive ? 'text-red-700 dark:text-red-400' : 'text-foreground'}`}>
-                {match.home_team}
-              </h3>
-            </div>
-            <div className="flex items-center gap-4 px-8">
-              {!['UPCOMING', 'TIMED', 'NS'].includes(match.status) ? (
-                <>
-                  <span className={`text-3xl font-bold ${
-                    isLive ? 'text-red-600 dark:text-red-400' : 'text-foreground'
-                  }`}>
-                    {match.home_score ?? 0}
-                  </span>
-                  <span className={`text-2xl ${isLive ? 'text-red-500' : 'text-muted-foreground'}`}>
-                    -
-                  </span>
-                  <span className={`text-3xl font-bold ${
-                    isLive ? 'text-red-600 dark:text-red-400' : 'text-foreground'
-                  }`}>
-                    {match.away_score ?? 0}
-                  </span>
-                </>
-              ) : (
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Timer className="w-4 h-4" />
-                  <span>
-                    {new Date(match.start_time).toLocaleTimeString('en-US', {
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
-                  </span>
-                </div>
-              )}
-            </div>
-            <div className="flex-1 text-center">
-              <h3 className={`font-semibold text-lg ${isLive ? 'text-red-700 dark:text-red-400' : 'text-foreground'}`}>
-                {match.away_team}
-              </h3>
-            </div>
-          </div>
-          <div className="mt-2 text-center text-xs text-muted-foreground">
-            {new Date(match.start_time).toLocaleDateString('en-US', {
-              weekday: 'short',
-              month: 'short',
-              day: 'numeric'
-            })}
-          </div>
-        </CardContent>
-      </Card>
-    );
-  };
-  return <div className="min-h-screen bg-background p-6">
+        <div className="flex items-center gap-2">
+          <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+          <span className="text-sm font-medium">
+            {isRefreshing ? 'Refreshing...' : 'Pull to refresh'}
+          </span>
+        </div>
+      </motion.div>
+
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -522,6 +505,14 @@ const LiveScores = () => {
           <BannerAd className="w-full max-w-4xl" />
         </div>
 
+        {/* Live Odds Widget */}
+        <LiveOddsWidget 
+          title="Live Betting Odds & Predictions"
+          className="w-full"
+          autoRefresh={true}
+          refreshInterval={30000}
+        />
+
         {/* Tabs Navigation */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-4">
@@ -552,7 +543,38 @@ const LiveScores = () => {
                 <Play className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                 <p className="text-muted-foreground">No live matches at the moment</p>
               </div> : <div className="grid gap-4">
-                {liveMatches.map(match => <MatchCard key={match.id} match={match} showAnimation />)}
+                {liveMatches.map(match => (
+                  <EnhancedMatchCard
+                    key={match.id}
+                    match={{
+                      id: match.id,
+                      homeTeam: match.home_team,
+                      awayTeam: match.away_team,
+                      homeScore: match.home_score || undefined,
+                      awayScore: match.away_score || undefined,
+                      minute: match.minute || undefined,
+                      league: match.league,
+                      status: match.status.toLowerCase() as any,
+                      startTime: match.start_time,
+                      odds: {
+                        home: 2.0,
+                        draw: 3.2,
+                        away: 3.8
+                      },
+                      predictions: {
+                        homeWin: 45,
+                        draw: 28,
+                        awayWin: 27
+                      }
+                    }}
+                    showOdds={true}
+                    showPredictions={true}
+                    onPredict={(matchId) => {
+                      // Handle prediction
+                      console.log('Predict for match:', matchId);
+                    }}
+                  />
+                ))}
               </div>}
           </TabsContent>
 
@@ -562,7 +584,38 @@ const LiveScores = () => {
                 <Timer className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                 <p className="text-muted-foreground">No upcoming fixtures</p>
               </div> : <div className="grid gap-4">
-                {upcomingMatches.map(match => <MatchCard key={match.id} match={match} />)}
+                {upcomingMatches.map(match => (
+                  <EnhancedMatchCard
+                    key={match.id}
+                    match={{
+                      id: match.id,
+                      homeTeam: match.home_team,
+                      awayTeam: match.away_team,
+                      homeScore: match.home_score || undefined,
+                      awayScore: match.away_score || undefined,
+                      minute: match.minute || undefined,
+                      league: match.league,
+                      status: match.status.toLowerCase() as any,
+                      startTime: match.start_time,
+                      odds: {
+                        home: 2.1,
+                        draw: 3.1,
+                        away: 3.9
+                      },
+                      predictions: {
+                        homeWin: 42,
+                        draw: 30,
+                        awayWin: 28
+                      }
+                    }}
+                    showOdds={true}
+                    showPredictions={true}
+                    onPredict={(matchId) => {
+                      // Handle prediction
+                      console.log('Predict for match:', matchId);
+                    }}
+                  />
+                ))}
               </div>}
           </TabsContent>
 
@@ -572,7 +625,38 @@ const LiveScores = () => {
                 <Target className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                 <p className="text-muted-foreground">No recent results</p>
               </div> : <div className="grid gap-4">
-                {recentResults.map(match => <MatchCard key={match.id} match={match} />)}
+                {recentResults.map(match => (
+                  <EnhancedMatchCard
+                    key={match.id}
+                    match={{
+                      id: match.id,
+                      homeTeam: match.home_team,
+                      awayTeam: match.away_team,
+                      homeScore: match.home_score || undefined,
+                      awayScore: match.away_score || undefined,
+                      minute: match.minute || undefined,
+                      league: match.league,
+                      status: match.status.toLowerCase() as any,
+                      startTime: match.start_time,
+                      odds: {
+                        home: 2.0,
+                        draw: 3.2,
+                        away: 3.8
+                      },
+                      predictions: {
+                        homeWin: 45,
+                        draw: 28,
+                        awayWin: 27
+                      }
+                    }}
+                    showOdds={false}
+                    showPredictions={false}
+                    onPredict={(matchId) => {
+                      // Handle prediction
+                      console.log('Predict for match:', matchId);
+                    }}
+                  />
+                ))}
               </div>}
           </TabsContent>
 
@@ -638,7 +722,7 @@ const LiveScores = () => {
 
         {/* Match Details Modal */}
         <Dialog open={!!selectedMatch} onOpenChange={() => setSelectedMatch(null)}>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-4xl">
             <DialogHeader>
               <DialogTitle className="flex items-center justify-between">
                 <span>{selectedMatch?.home_team} vs {selectedMatch?.away_team}</span>
@@ -713,10 +797,24 @@ const LiveScores = () => {
                       {selectedMatch.yellow_cards.map((card, index) => <li key={index} className="text-sm text-yellow-600">🟨 {card}</li>)}
                     </ul>
                   </div>}
+
+                {/* Oddspedia Match Widget */}
+                {selectedMatch && (
+                  <div className="mt-6">
+                    <h4 className="font-semibold mb-4">Live Match Analysis & Odds</h4>
+                    <LiveMatchWidget 
+                      matchId={selectedMatch.id}
+                      title={`${selectedMatch.home_team} vs ${selectedMatch.away_team} - Live Analysis`}
+                      autoRefresh={true}
+                      refreshInterval={15000}
+                    />
+                  </div>
+                )}
               </div>}
           </DialogContent>
         </Dialog>
       </div>
-    </div>;
+    </motion.div>
+  );
 };
 export default LiveScores;

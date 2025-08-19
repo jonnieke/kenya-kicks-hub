@@ -6,6 +6,8 @@ import { TrendingUp, Trophy, Target, Users, RefreshCw } from "lucide-react"
 import { useState, useEffect } from "react"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
+import { LiveOddsWidget, MatchPredictionWidget } from "@/components/OddspediaWidget"
+import InteractiveDashboard from "@/components/InteractiveDashboard"
 
 const Predictions = () => {
   const [predictions, setPredictions] = useState([])
@@ -98,7 +100,7 @@ const Predictions = () => {
             </div>
             <div>
               <h1 className="text-3xl font-bold text-foreground">Match Predictions & Odds</h1>
-              <p className="text-muted-foreground">AI-powered predictions with betting odds</p>
+              <p className="text-muted-foreground">AI-powered predictions with Oddspedia betting insights</p>
             </div>
           </div>
           <Button 
@@ -111,6 +113,19 @@ const Predictions = () => {
             Refresh
           </Button>
         </div>
+
+        {/* Interactive Dashboard */}
+        <div className="animate-slideInUp" style={{animationDelay: '0.2s'}}>
+          <InteractiveDashboard />
+        </div>
+
+        {/* Live Odds Widget */}
+        <LiveOddsWidget 
+          title="Live Betting Odds & Market Movements"
+          className="w-full"
+          autoRefresh={true}
+          refreshInterval={30000}
+        />
 
         <div className="grid gap-6">
           {loading ? (

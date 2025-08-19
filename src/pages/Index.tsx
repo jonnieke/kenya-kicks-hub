@@ -1,10 +1,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Trophy, Activity, Newspaper, TrendingUp, Users, Clock, Calendar, Flame, Zap, Target, Star, Play, ArrowRight } from "lucide-react";
+import { Trophy, Activity, Newspaper, TrendingUp, Users, Clock, Calendar, Flame, Zap, Target, Star, Play, ArrowRight, Crown, Gift } from "lucide-react";
 import { Link } from "react-router-dom";
 import { AffiliateRedirect } from "@/components/AffiliateRedirect";
 import { BannerAd, SidebarAd } from "@/components/AdSense";
+import { LiveOddsWidget, LiveMatchWidget } from "@/components/OddspediaWidget";
+import BettingInsights from "@/components/BettingInsights";
+import PremiumFeatures from "@/components/PremiumFeatures";
+import InteractiveDashboard from "@/components/InteractiveDashboard";
 import heroImage from "@/assets/hero-footballer-scoring.jpg";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -304,6 +308,11 @@ const Index = () => {
           <BannerAd className="w-full max-w-4xl" />
         </div>
 
+        {/* Interactive Dashboard for Logged-in Users */}
+        <div className="animate-slideInUp" style={{animationDelay: '0.2s'}}>
+          <InteractiveDashboard />
+        </div>
+
         {/* Quick Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 animate-slideInUp" style={{
         animationDelay: '0.3s'
@@ -377,6 +386,69 @@ const Index = () => {
             </Button>
           </CardContent>
         </Card>
+
+        {/* Live Odds Widget */}
+        <LiveOddsWidget 
+          title="Live Betting Odds & Market Movements"
+          className="w-full animate-slideInUp"
+          autoRefresh={true}
+          refreshInterval={30000}
+          style={{animationDelay: '0.7s'}}
+        />
+
+        {/* Premium Features Showcase */}
+        <Card className="bg-gradient-to-br from-yellow-50/50 to-orange-50/50 border-yellow-200 shadow-card hover:shadow-elevated transition-all duration-300 animate-slideInUp" style={{animationDelay: '0.8s'}}>
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center">
+                  <Crown className="w-6 h-6 text-white" />
+                </div>
+                <span className="text-2xl font-bold">Premium Features</span>
+              </div>
+              <Badge className="bg-yellow-100 text-yellow-800 border-yellow-300">
+                <Gift className="w-4 h-4 mr-1" />
+                Limited Offer
+              </Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-3 gap-6">
+              <div className="text-center space-y-2">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl flex items-center justify-center mx-auto">
+                  <Target className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="font-semibold">Advanced Analytics</h3>
+                <p className="text-sm text-muted-foreground">Deep dive into match statistics and player performance data</p>
+              </div>
+              <div className="text-center space-y-2">
+                <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-xl flex items-center justify-center mx-auto">
+                  <Zap className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="font-semibold">Exclusive Tips</h3>
+                <p className="text-sm text-muted-foreground">Premium betting insights from our expert analysts</p>
+              </div>
+              <div className="text-center space-y-2">
+                <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-purple-600 rounded-xl flex items-center justify-center mx-auto">
+                  <Users className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="font-semibold">VIP Community</h3>
+                <p className="text-sm text-muted-foreground">Access to exclusive discussions and premium content</p>
+              </div>
+            </div>
+            <div className="flex justify-center mt-6">
+              <Button className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-white font-semibold px-8 py-3 text-lg">
+                <Crown className="w-5 h-5 mr-2" />
+                Upgrade to Premium
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Betting Insights Preview */}
+        <div className="animate-slideInUp" style={{animationDelay: '0.9s'}}>
+          <BettingInsights />
+        </div>
 
         {/* Quick Actions */}
         <div className="grid md:grid-cols-3 gap-8 animate-slideInUp" style={{

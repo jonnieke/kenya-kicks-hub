@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast"
 import { AffiliateApplication } from "@/components/AffiliateApplication"
 import { AffiliateStats } from "@/components/AffiliateStats"
 import { AffiliateLinkManager } from "@/components/AffiliateLinkManager"
+import { EnhancedAffiliateDashboard } from "@/components/EnhancedAffiliateDashboard"
 
 interface Affiliate {
   id: string
@@ -138,7 +139,7 @@ export default function Affiliates() {
 
       {affiliate.status === 'approved' && (
         <>
-          <AffiliateStats affiliate={affiliate} />
+          <EnhancedAffiliateDashboard affiliate={affiliate} />
           <AffiliateLinkManager affiliateId={affiliate.id} />
         </>
       )}
