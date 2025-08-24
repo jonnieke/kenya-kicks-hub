@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 
 interface Affiliate {
   id: string;
-  user_id: string;
+  user_id: string | null;
   affiliate_code: string;
   contact_email: string;
   company_name: string;
@@ -59,7 +59,14 @@ const AdminAffiliateManager = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setAffiliates((data as Affiliate[]) || []);
+      
+      // Type cast the data to match our interface
+      const typedData: Affiliate[] = (data || []).map(item => ({
+        ...item,
+        status: item.status as Affiliate['status']
+      }));
+      
+      setAffiliates(typedData);
     } catch (error) {
       console.error('Error fetching affiliates:', error);
       toast({
