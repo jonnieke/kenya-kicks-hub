@@ -139,7 +139,7 @@ export default function Affiliates() {
 
       {affiliate.status === 'approved' && (
         <>
-          <EnhancedAffiliateDashboard affiliate={affiliate} />
+          <EnhancedAffiliateDashboard />
           <AffiliateLinkManager affiliateId={affiliate.id} />
         </>
       )}

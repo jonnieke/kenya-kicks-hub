@@ -79,8 +79,12 @@ class PerformanceMonitor {
       const observer = new PerformanceObserver((list) => {
         const entries = list.getEntries();
         entries.forEach((entry) => {
-          this.metrics.fid = entry.processingStart - entry.startTime;
-          this.logMetric('FID', this.metrics.fid);
+          // Cast to PerformanceEventTiming to access processingStart
+          const eventEntry = entry as PerformanceEventTiming;
+          if (eventEntry.processingStart) {
+            this.metrics.fid = eventEntry.processingStart - entry.startTime;
+            this.logMetric('FID', this.metrics.fid);
+          }
         });
       });
       

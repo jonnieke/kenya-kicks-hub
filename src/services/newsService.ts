@@ -415,7 +415,10 @@ class NewsService {
         .limit(20);
 
       if (error) throw error;
-      return data || [];
+      return (data || []).map(article => ({
+        ...article,
+        source: 'FootballKE'
+      }));
     } catch (error) {
       console.error(`Error fetching ${category} news:`, error);
       return [];
@@ -436,7 +439,10 @@ class NewsService {
         .limit(20);
 
       if (error) throw error;
-      return data || [];
+      return (data || []).map(article => ({
+        ...article,
+        source: 'FootballKE'
+      }));
     } catch (error) {
       console.error('Error searching news:', error);
       return [];

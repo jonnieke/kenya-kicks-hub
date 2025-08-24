@@ -393,7 +393,6 @@ const Index = () => {
           className="w-full animate-slideInUp"
           autoRefresh={true}
           refreshInterval={30000}
-          style={{animationDelay: '0.7s'}}
         />
 
         {/* Premium Features Showcase */}
