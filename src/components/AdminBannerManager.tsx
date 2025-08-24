@@ -79,7 +79,13 @@ const AdminBannerManager = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setBanners(data || []);
+      // Type cast the data to match our interface
+      const typedData: Banner[] = (data || []).map(item => ({
+        ...item,
+        banner_type: item.banner_type as Banner['banner_type']
+      }));
+      
+      setBanners(typedData);
     } catch (error) {
       console.error('Error fetching banners:', error);
       toast({

@@ -107,7 +107,7 @@ const SmartNotifications = () => {
       },
       {
         id: '4',
-        type: 'social',
+        type: 'info',
         title: 'New Community Member',
         message: 'John Doe joined your prediction group',
         timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
@@ -117,7 +117,7 @@ const SmartNotifications = () => {
       },
       {
         id: '5',
-        type: 'system',
+        type: 'info',
         title: 'System Update',
         message: 'New features have been added to Ball Mtaani',
         timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 hours ago

@@ -18,16 +18,23 @@ interface VoiceCommandsProps {
   className?: string;
 }
 
+interface ExtendedWindow extends Window {
+  SpeechRecognition?: any;
+  webkitSpeechRecognition?: any;
+}
+
+declare const window: ExtendedWindow;
+
 export const VoiceCommands = ({ commands, className = "" }: VoiceCommandsProps) => {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [isSupported, setIsSupported] = useState(false);
   const [showCommands, setShowCommands] = useState(false);
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognitionRef = useRef<any>(null);
 
   // Check if speech recognition is supported
   useEffect(() => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     
     if (SpeechRecognition) {
       setIsSupported(true);

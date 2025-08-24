@@ -72,27 +72,7 @@ export function EnhancedAffiliateDashboard() {
     try {
       setLoading(true);
       
-      // Fetch affiliate statistics
-      const { data: statsData, error: statsError } = await supabase
-        .from('affiliate_stats')
-        .select('*')
-        .single();
-
-      if (statsError && statsError.code !== 'PGRST116') {
-        console.error('Error fetching stats:', statsError);
-      }
-
-      // Fetch affiliate links
-      const { data: linksData, error: linksError } = await supabase
-        .from('affiliate_links')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (linksError) {
-        console.error('Error fetching links:', linksError);
-      }
-
-      // Set mock data for demonstration
+      // Set mock data for demonstration purposes
       setStats({
         totalClicks: 15420,
         totalConversions: 847,
@@ -125,7 +105,31 @@ export function EnhancedAffiliateDashboard() {
         ]
       });
 
-      setLinks(linksData || []);
+      // Set mock links data
+      setLinks([
+        {
+          id: '1',
+          name: 'Premier League Betting',
+          url: 'https://ballmtaani.com/predictions?ref=user123&cat=premier-league',
+          category: 'Premier League',
+          clicks: 3240,
+          conversions: 189,
+          earnings: 567.00,
+          status: 'active',
+          createdAt: new Date().toISOString()
+        },
+        {
+          id: '2', 
+          name: 'Champions League Odds',
+          url: 'https://ballmtaani.com/predictions?ref=user123&cat=champions-league',
+          category: 'Champions League',
+          clicks: 2890,
+          conversions: 156,
+          earnings: 468.00,
+          status: 'active',
+          createdAt: new Date().toISOString()
+        }
+      ]);
     } catch (error) {
       console.error('Error fetching affiliate data:', error);
       toast.error('Failed to load affiliate data');
@@ -147,22 +151,19 @@ export function EnhancedAffiliateDashboard() {
 
   const createNewLink = async (name: string, category: string, baseUrl: string) => {
     try {
-      const newLink: Omit<AffiliateLink, 'id' | 'clicks' | 'conversions' | 'earnings' | 'createdAt'> = {
+      const newLink: AffiliateLink = {
+        id: Date.now().toString(),
         name,
         url: generateAffiliateLink(baseUrl, category),
         category,
-        status: 'active'
+        status: 'active',
+        clicks: 0,
+        conversions: 0,
+        earnings: 0,
+        createdAt: new Date().toISOString()
       };
 
-      const { data, error } = await supabase
-        .from('affiliate_links')
-        .insert([newLink])
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      setLinks(prev => [data, ...prev]);
+      setLinks(prev => [newLink, ...prev]);
       toast.success('New affiliate link created!');
     } catch (error) {
       console.error('Error creating link:', error);

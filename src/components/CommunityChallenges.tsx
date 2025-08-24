@@ -13,7 +13,7 @@ import {
   TrendingUp,
   Gift,
   Award,
-  Fire,
+  Flame,
   Crown,
   Medal,
   CheckCircle,
