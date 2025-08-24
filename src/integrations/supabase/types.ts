@@ -214,6 +214,60 @@ export type Database = {
         }
         Relationships: []
       }
+      banners: {
+        Row: {
+          banner_type: string
+          click_count: number
+          created_at: string
+          description: string | null
+          end_date: string | null
+          id: string
+          image_url: string
+          is_active: boolean
+          link_url: string | null
+          position: string
+          start_date: string | null
+          target_audience: string[] | null
+          title: string
+          updated_at: string
+          view_count: number
+        }
+        Insert: {
+          banner_type: string
+          click_count?: number
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          image_url: string
+          is_active?: boolean
+          link_url?: string | null
+          position?: string
+          start_date?: string | null
+          target_audience?: string[] | null
+          title: string
+          updated_at?: string
+          view_count?: number
+        }
+        Update: {
+          banner_type?: string
+          click_count?: number
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          image_url?: string
+          is_active?: boolean
+          link_url?: string | null
+          position?: string
+          start_date?: string | null
+          target_audience?: string[] | null
+          title?: string
+          updated_at?: string
+          view_count?: number
+        }
+        Relationships: []
+      }
       competitions: {
         Row: {
           api_id: number

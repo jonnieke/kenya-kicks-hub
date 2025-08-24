@@ -3,14 +3,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Edit, Trash2, Eye, Calendar, Users, TrendingUp, DollarSign, CheckCircle, XCircle, Clock } from "lucide-react";
+import { Plus, Edit, Trash2, Eye, Users, TrendingUp, DollarSign, CheckCircle, XCircle, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface Affiliate {
@@ -50,14 +47,6 @@ const AdminAffiliateManager = () => {
     { value: 'suspended', label: 'Suspended', color: 'bg-gray-500/20 text-gray-600' }
   ];
 
-  const paymentMethods = [
-    'M-Pesa', 'Bank Transfer', 'PayPal', 'Stripe', 'Cash', 'Other'
-  ];
-
-  const socialMediaPlatforms = [
-    'Facebook', 'Twitter', 'Instagram', 'LinkedIn', 'YouTube', 'TikTok', 'Telegram'
-  ];
-
   useEffect(() => {
     fetchAffiliates();
   }, []);
@@ -70,7 +59,7 @@ const AdminAffiliateManager = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setAffiliates(data || []);
+      setAffiliates((data as Affiliate[]) || []);
     } catch (error) {
       console.error('Error fetching affiliates:', error);
       toast({
@@ -143,17 +132,11 @@ const AdminAffiliateManager = () => {
   const handleEdit = (affiliate: Affiliate) => {
     setEditingAffiliate(affiliate);
     setFormData({
-      username: affiliate.username,
-      email: affiliate.email,
-      phone: affiliate.phone || "",
-      company_name: affiliate.company_name || "",
-      website: affiliate.website || "",
-      social_media: affiliate.social_media || [],
+      affiliate_code: affiliate.affiliate_code,
+      contact_email: affiliate.contact_email,
+      company_name: affiliate.company_name,
       status: affiliate.status,
-      commission_rate: affiliate.commission_rate,
-      payment_method: affiliate.payment_method || "",
-      payment_details: affiliate.payment_details || "",
-      notes: affiliate.notes || ""
+      commission_rate: affiliate.commission_rate
     });
     setIsEditDialogOpen(true);
   };
@@ -210,28 +193,13 @@ const AdminAffiliateManager = () => {
 
   const resetForm = () => {
     setFormData({
-      username: "",
-      email: "",
-      phone: "",
+      affiliate_code: "",
+      contact_email: "",
       company_name: "",
-      website: "",
-      social_media: [],
       status: "pending",
-      commission_rate: 10,
-      payment_method: "",
-      payment_details: "",
-      notes: ""
+      commission_rate: 10
     });
     setEditingAffiliate(null);
-  };
-
-  const toggleSocialMedia = (platform: string) => {
-    setFormData(prev => ({
-      ...prev,
-      social_media: prev.social_media.includes(platform)
-        ? prev.social_media.filter(p => p !== platform)
-        : [...prev.social_media, platform]
-    }));
   };
 
   const getStatusIcon = (status: Affiliate['status']) => {
@@ -270,63 +238,43 @@ const AdminAffiliateManager = () => {
               Add New Affiliate
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>Create New Affiliate</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="username">Username *</Label>
+                  <Label htmlFor="affiliate_code">Affiliate Code *</Label>
                   <Input
-                    id="username"
-                    value={formData.username}
-                    onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
-                    placeholder="Enter username"
+                    id="affiliate_code"
+                    value={formData.affiliate_code}
+                    onChange={(e) => setFormData(prev => ({ ...prev, affiliate_code: e.target.value }))}
+                    placeholder="Enter affiliate code"
                     required
                   />
                 </div>
                 <div>
-                  <Label htmlFor="email">Email *</Label>
+                  <Label htmlFor="contact_email">Contact Email *</Label>
                   <Input
-                    id="email"
+                    id="contact_email"
                     type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                    placeholder="Enter email"
+                    value={formData.contact_email}
+                    onChange={(e) => setFormData(prev => ({ ...prev, contact_email: e.target.value }))}
+                    placeholder="Enter contact email"
                     required
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="phone">Phone</Label>
-                  <Input
-                    id="phone"
-                    value={formData.phone}
-                    onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                    placeholder="Enter phone number"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="company_name">Company Name</Label>
-                  <Input
-                    id="company_name"
-                    value={formData.company_name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, company_name: e.target.value }))}
-                    placeholder="Enter company name"
                   />
                 </div>
               </div>
 
               <div>
-                <Label htmlFor="website">Website</Label>
+                <Label htmlFor="company_name">Company Name *</Label>
                 <Input
-                  id="website"
-                  value={formData.website}
-                  onChange={(e) => setFormData(prev => ({ ...prev, website: e.target.value }))}
-                  placeholder="https://example.com"
+                  id="company_name"
+                  value={formData.company_name}
+                  onChange={(e) => setFormData(prev => ({ ...prev, company_name: e.target.value }))}
+                  placeholder="Enter company name"
+                  required
                 />
               </div>
 
@@ -366,67 +314,6 @@ const AdminAffiliateManager = () => {
                 </div>
               </div>
 
-              <div>
-                <Label>Social Media Platforms</Label>
-                <div className="grid grid-cols-2 gap-2 mt-2">
-                  {socialMediaPlatforms.map(platform => (
-                    <div key={platform} className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id={platform}
-                        checked={formData.social_media.includes(platform)}
-                        onChange={() => toggleSocialMedia(platform)}
-                        className="rounded"
-                      />
-                      <Label htmlFor={platform} className="text-sm font-normal">
-                        {platform}
-                      </Label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="payment_method">Payment Method</Label>
-                  <Select
-                    value={formData.payment_method}
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, payment_method: value }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select payment method" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {paymentMethods.map(method => (
-                        <SelectItem key={method} value={method}>
-                          {method}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="payment_details">Payment Details</Label>
-                  <Input
-                    id="payment_details"
-                    value={formData.payment_details}
-                    onChange={(e) => setFormData(prev => ({ ...prev, payment_details: e.target.value }))}
-                    placeholder="Account number, M-Pesa number, etc."
-                  />
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="notes">Notes</Label>
-                <Textarea
-                  id="notes"
-                  value={formData.notes}
-                  onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-                  placeholder="Additional notes about this affiliate"
-                  rows={3}
-                />
-              </div>
-
               <div className="flex justify-end space-x-2">
                 <Button
                   type="button"
@@ -453,15 +340,11 @@ const AdminAffiliateManager = () => {
                     <Users className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <CardTitle className="text-lg">{affiliate.username}</CardTitle>
+                    <CardTitle className="text-lg">{affiliate.affiliate_code}</CardTitle>
                     <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                      <span>{affiliate.email}</span>
-                      {affiliate.company_name && (
-                        <>
-                          <span>•</span>
-                          <span>{affiliate.company_name}</span>
-                        </>
-                      )}
+                      <span>{affiliate.contact_email}</span>
+                      <span>•</span>
+                      <span>{affiliate.company_name}</span>
                     </div>
                   </div>
                 </div>
@@ -515,7 +398,7 @@ const AdminAffiliateManager = () => {
                   <p className="text-sm text-muted-foreground mb-1">Earnings</p>
                   <div className="flex items-center text-sm font-medium">
                     <DollarSign className="w-4 h-4 mr-1" />
-                    {affiliate.total_earnings.toFixed(2)}
+                    ${affiliate.total_earnings.toFixed(2)}
                   </div>
                 </div>
                 <div>
@@ -575,64 +458,43 @@ const AdminAffiliateManager = () => {
 
       {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Edit Affiliate</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Same form fields as create, but with editingAffiliate data */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="edit_username">Username *</Label>
+                <Label htmlFor="edit_affiliate_code">Affiliate Code *</Label>
                 <Input
-                  id="edit_username"
-                  value={formData.username}
-                  onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
-                  placeholder="Enter username"
+                  id="edit_affiliate_code"
+                  value={formData.affiliate_code}
+                  onChange={(e) => setFormData(prev => ({ ...prev, affiliate_code: e.target.value }))}
+                  placeholder="Enter affiliate code"
                   required
                 />
               </div>
               <div>
-                <Label htmlFor="edit_email">Email *</Label>
+                <Label htmlFor="edit_contact_email">Contact Email *</Label>
                 <Input
-                  id="edit_email"
+                  id="edit_contact_email"
                   type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                  placeholder="Enter email"
+                  value={formData.contact_email}
+                  onChange={(e) => setFormData(prev => ({ ...prev, contact_email: e.target.value }))}
+                  placeholder="Enter contact email"
                   required
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="edit_phone">Phone</Label>
-                <Input
-                  id="edit_phone"
-                  value={formData.phone}
-                  onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                  placeholder="Enter phone number"
-                />
-              </div>
-              <div>
-                <Label htmlFor="edit_company_name">Company Name</Label>
-                <Input
-                  id="edit_company_name"
-                  value={formData.company_name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, company_name: e.target.value }))}
-                  placeholder="Enter company name"
                 />
               </div>
             </div>
 
             <div>
-              <Label htmlFor="edit_website">Website</Label>
+              <Label htmlFor="edit_company_name">Company Name *</Label>
               <Input
-                id="edit_website"
-                value={formData.website}
-                onChange={(e) => setFormData(prev => ({ ...prev, website: e.target.value }))}
-                placeholder="https://example.com"
+                id="edit_company_name"
+                value={formData.company_name}
+                onChange={(e) => setFormData(prev => ({ ...prev, company_name: e.target.value }))}
+                placeholder="Enter company name"
+                required
               />
             </div>
 
@@ -670,67 +532,6 @@ const AdminAffiliateManager = () => {
                   required
                 />
               </div>
-            </div>
-
-            <div>
-              <Label>Social Media Platforms</Label>
-              <div className="grid grid-cols-2 gap-2 mt-2">
-                {socialMediaPlatforms.map(platform => (
-                  <div key={platform} className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id={`edit_${platform}`}
-                      checked={formData.social_media.includes(platform)}
-                      onChange={() => toggleSocialMedia(platform)}
-                      className="rounded"
-                    />
-                    <Label htmlFor={`edit_${platform}`} className="text-sm font-normal">
-                      {platform}
-                    </Label>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="edit_payment_method">Payment Method</Label>
-                <Select
-                  value={formData.payment_method}
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, payment_method: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select payment method" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {paymentMethods.map(method => (
-                      <SelectItem key={method} value={method}>
-                        {method}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="edit_payment_details">Payment Details</Label>
-                <Input
-                  id="edit_payment_details"
-                  value={formData.payment_details}
-                  onChange={(e) => setFormData(prev => ({ ...prev, payment_details: e.target.value }))}
-                  placeholder="Account number, M-Pesa number, etc."
-                />
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="edit_notes">Notes</Label>
-              <Textarea
-                id="edit_notes"
-                value={formData.notes}
-                onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-                placeholder="Additional notes about this affiliate"
-                rows={3}
-              />
             </div>
 
             <div className="flex justify-end space-x-2">

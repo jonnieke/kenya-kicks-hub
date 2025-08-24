@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { TrendingUp, Target, Zap, Star, ExternalLink, RefreshCw } from 'lucide-react';
+import { TrendingUp, Target, Zap, Star, ExternalLink, RefreshCw, Globe2 as Globe } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface FallbackBettingWidgetProps {
