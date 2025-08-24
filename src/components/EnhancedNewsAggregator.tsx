@@ -9,7 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { 
   RefreshCw, 
   Search, 
-  Globe, 
+  Globe2 as Globe, 
   TrendingUp, 
   Clock, 
   ExternalLink,

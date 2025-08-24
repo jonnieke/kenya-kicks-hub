@@ -16,20 +16,14 @@ import { useToast } from "@/hooks/use-toast";
 interface Affiliate {
   id: string;
   user_id: string;
-  username: string;
-  email: string;
-  phone: string | null;
-  company_name: string | null;
-  website: string | null;
-  social_media: string[] | null;
+  affiliate_code: string;
+  contact_email: string;
+  company_name: string;
   status: 'pending' | 'approved' | 'rejected' | 'suspended';
   commission_rate: number;
   total_clicks: number;
   total_conversions: number;
   total_earnings: number;
-  payment_method: string | null;
-  payment_details: string | null;
-  notes: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -42,17 +36,11 @@ const AdminAffiliateManager = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingAffiliate, setEditingAffiliate] = useState<Affiliate | null>(null);
   const [formData, setFormData] = useState({
-    username: "",
-    email: "",
-    phone: "",
+    affiliate_code: "",
+    contact_email: "",
     company_name: "",
-    website: "",
-    social_media: [] as string[],
     status: "pending" as Affiliate['status'],
-    commission_rate: 10,
-    payment_method: "",
-    payment_details: "",
-    notes: ""
+    commission_rate: 10
   });
 
   const statuses = [
@@ -103,20 +91,14 @@ const AdminAffiliateManager = () => {
       if (!user) throw new Error("Not authenticated");
 
       const affiliateData = {
-        username: formData.username,
-        email: formData.email,
-        phone: formData.phone || null,
-        company_name: formData.company_name || null,
-        website: formData.website || null,
-        social_media: formData.social_media.length > 0 ? formData.social_media : null,
+        affiliate_code: formData.affiliate_code,
+        contact_email: formData.contact_email,
+        company_name: formData.company_name,
         status: formData.status,
         commission_rate: formData.commission_rate,
         total_clicks: 0,
         total_conversions: 0,
-        total_earnings: 0,
-        payment_method: formData.payment_method || null,
-        payment_details: formData.payment_details || null,
-        notes: formData.notes || null
+        total_earnings: 0
       };
 
       if (editingAffiliate) {
