@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { EnhancedNavigation } from "./components/EnhancedNavigation";
+import { Footer } from "./components/Footer";
 import SmartNotifications from "./components/SmartNotifications";
 import Index from "./pages/Index";
 import LiveScores from "./pages/LiveScores";
@@ -48,6 +49,7 @@ const App = () => (
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>
+            <Footer />
           </div>
         </BrowserRouter>
       </TooltipProvider>
